@@ -1,6 +1,26 @@
 body {
-    margin: 0;
-    background-color: white;
+    background-color: #000000;
+    margin: 0px;
+    overflow: hidden;
+    font-family:Monospace;
+    font-size:13px;
+    text-align:center;
+    font-weight: bold;
+}
+
+a {
+    color:#00ff78;
+}
+
+#info {
+    color: #fff;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 5px;
+}
+.dg.ac {
+    z-index: 1 !important; /* FIX DAT.GUI */
 }
 
 canvas {
