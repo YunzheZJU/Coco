@@ -3,80 +3,91 @@
  */
 
 'use strict';
-if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 var container, stats;
-var camera, scene, renderer;
+var camera, scene, raycaster, renderer;
+var mouse = new THREE.Vector2(), INTERSECTED;
 var effectComposer;
 var ssaoPass;
-var group;
-
-var postprocessing = { enabled: true, onlyAO: false, radius: 32, aoClamp: 0.25, lumInfluence: 0.7 };
+var grid = [];
+var postprocessing = {enabled: true, onlyAO: false, radius: 5, aoClamp: 0.2, lumInfluence: 0.28};
 
 init();
 animate();
 
 function init() {
 
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
+    container = document.createElement('div');
+    document.body.appendChild(container);
 
-    renderer = new THREE.WebGLRenderer( { antialias: false } );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    raycaster = new THREE.Raycaster();
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 100, 700 );
-    camera.position.z = 500;
+    renderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 20, 0);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xa0a0a0 );
+    scene.background = new THREE.Color(0xeeeeee);
 
-    group = new THREE.Object3D();
-    scene.add( group );
+    // Create a plane that receives shadows (but does not cast them)
+    var planeGeometry = new THREE.BoxGeometry(1000, 0.1, 1000);
+    var planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.name = "Ground";
+    scene.add(plane);
 
-    var geometry = new THREE.BoxGeometry( 10, 10, 10 );
-    for ( var i = 0; i < 200; i ++ ) {
-
-        var material = new THREE.MeshBasicMaterial();
-        material.color.r = Math.random();
-        material.color.g = Math.random();
-        material.color.b = Math.random();
-
-        var mesh = new THREE.Mesh( geometry, material );
-        mesh.position.x = Math.random() * 400 - 200;
-        mesh.position.y = Math.random() * 400 - 200;
-        mesh.position.z = Math.random() * 400 - 200;
-        mesh.rotation.x = Math.random();
-        mesh.rotation.y = Math.random();
-        mesh.rotation.z = Math.random();
-
-        mesh.scale.x = mesh.scale.y = mesh.scale.z = Math.random() * 10 + 1;
-        group.add( mesh );
-
+    grid.push(new Grid(0, new THREE.Vector3(1, 0, 1), 0));
+    grid.push(new Grid(0, new THREE.Vector3(0, 0, 0), 0));
+    for (let g of grid) {
+        g.load();
     }
+    TweenLite.to(camera.position, 2, {
+        y: 5,
+        ease: Cubic.easeInOut,
+        onComplete: function () {
+            for (let g of grid) {
+                g.show();
+            }
+        }
+    });
 
     stats = new Stats();
-    container.appendChild( stats.dom );
+    container.appendChild(stats.dom);
 
     // Init postprocessing
     initPostprocessing();
 
     // Init gui
     var gui = new dat.GUI();
-    gui.add( postprocessing, 'enabled' );
+    gui.add(postprocessing, 'enabled');
 
-    gui.add( postprocessing, 'onlyAO', false ).onChange( function( value ) { ssaoPass.onlyAO = value; } );
+    gui.add(postprocessing, 'onlyAO', false).onChange(function (value) {
+        ssaoPass.onlyAO = value;
+    });
 
-    gui.add( postprocessing, 'radius' ).min( 0 ).max( 64 ).onChange( function( value ) { ssaoPass.radius = value; } );
+    gui.add(postprocessing, 'radius').min(0).max(64).onChange(function (value) {
+        ssaoPass.radius = value;
+    });
 
-    gui.add( postprocessing, 'aoClamp' ).min( 0 ).max( 1 ).onChange( function( value ) { ssaoPass.aoClamp = value; } );
+    gui.add(postprocessing, 'aoClamp').min(0).max(1).onChange(function (value) {
+        ssaoPass.aoClamp = value;
+    });
 
-    gui.add( postprocessing, 'lumInfluence' ).min( 0 ).max( 1 ).onChange( function( value ) { ssaoPass.lumInfluence = value; } );
+    gui.add(postprocessing, 'lumInfluence').min(0).max(1).onChange(function (value) {
+        ssaoPass.lumInfluence = value;
+    });
 
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-    window.addEventListener( 'resize', onWindowResize, false );
-
-    onWindowResize();
+    window.addEventListener('resize', onWindowResize, false);
 
 }
 
@@ -88,169 +99,64 @@ function onWindowResize() {
 
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize( width, height );
+    renderer.setSize(width, height);
 
     // Resize renderTargets
-    ssaoPass.setSize( width, height );
+    ssaoPass.setSize(width, height);
 
     var pixelRatio = renderer.getPixelRatio();
-    var newWidth  = Math.floor( width / pixelRatio ) || 1;
-    var newHeight = Math.floor( height / pixelRatio ) || 1;
-    effectComposer.setSize( newWidth, newHeight );
+    var newWidth = Math.floor(width / pixelRatio) || 1;
+    var newHeight = Math.floor(height / pixelRatio) || 1;
+    effectComposer.setSize(newWidth, newHeight);
+}
+
+function onDocumentMouseMove( event ) {
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
 function initPostprocessing() {
 
     // Setup render pass
-    var renderPass = new THREE.RenderPass( scene, camera );
+    var renderPass = new THREE.RenderPass(scene, camera);
 
     // Setup SSAO pass
-    ssaoPass = new THREE.SSAOPass( scene, camera );
+    ssaoPass = new THREE.SSAOPass(scene, camera);
     ssaoPass.renderToScreen = true;
 
     // Add pass to effect composer
-    effectComposer = new THREE.EffectComposer( renderer );
-    effectComposer.addPass( renderPass );
-    effectComposer.addPass( ssaoPass );
+    effectComposer = new THREE.EffectComposer(renderer);
+    effectComposer.addPass(renderPass);
+    effectComposer.addPass(ssaoPass);
 
 }
 
 function animate() {
-
-    requestAnimationFrame( animate );
-
-    stats.begin();
+    requestAnimationFrame(animate);
     render();
-    stats.end();
-
+    stats.update();
 }
 
 function render() {
-
-    var timer = performance.now();
-    group.rotation.x = timer * 0.0002;
-    group.rotation.y = timer * 0.0001;
-
-    if ( postprocessing.enabled ) {
-
+    if (postprocessing.enabled) {
+        // find intersections
+        raycaster.setFromCamera( mouse, camera );
+        var objects = scene.children.slice(1);
+        var intersects = raycaster.intersectObjects(objects);
+        if ( intersects.length > 0 ) {
+            if ( INTERSECTED !== intersects[ 0 ].object ) {
+                if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+                INTERSECTED = intersects[ 0 ].object;
+                INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+                INTERSECTED.material.color.setHex( 0xff0000 );
+            }
+        } else {
+            if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+            INTERSECTED = null;
+        }
         effectComposer.render();
-
     } else {
-
-        renderer.render( scene, camera );
-
+        renderer.render(scene, camera);
     }
-
 }
-
-// var scene = new THREE.Scene();
-// var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-// camera.position.set(0, 20, 0);
-//
-// var renderer = new THREE.WebGLRenderer({
-//     antialias: true
-// });
-// renderer.setSize(window.innerWidth, window.innerHeight);
-// renderer.setClearColor("#ffffff");
-// // renderer.shadowMap.enabled = true;
-// // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-// document.body.appendChild(renderer.domElement);
-//
-// // //Create a PointLight and turn on shadows for the light
-// // var light = new THREE.PointLight(0xffffff, 1, 100);
-// // light.position.set(5, 10, 5);
-// // light.castShadow = true;            // default false
-// // scene.add(light);
-// // //Set up shadow properties for the light
-// // light.shadow.mapSize.width = 1024;  // default
-// // light.shadow.mapSize.height = 1024; // default
-// // light.shadow.camera.near = 0.5;       // default
-// // light.shadow.camera.far = 500;      // default
-//
-// // var geometry = new THREE.BoxGeometry(2, 0.5, 2);
-// // var loader = new THREE.TextureLoader();
-// // var material = new THREE.MeshStandardMaterial();
-// // material.map = loader.load("image/texture.jpg");
-// var loader = new THREE.OBJLoader();
-// var cube;
-// loader.load("model/test.obj", function (group) {
-//     var loader = new THREE.TextureLoader();
-//     var material = new THREE.MeshBasicMaterial();
-//     material.map = loader.load( 'image/gridTexture.bmp' );
-//     material.map.wrapS = THREE.RepeatWrapping;
-//     group.traverse( function ( child ) {
-//         if ( child instanceof THREE.Mesh ) {
-//             child.material = material;
-//         }
-//     } );
-//     cube = group;
-//     // object.material = material;
-//     // group.position.x = - 0.45;
-//     // group.rotation.y = - 0.45;
-//     scene.add(group);
-//     TweenLite.to(cube.rotation, 2, {
-//         z: -Math.PI * 1.1,
-//         delay: 1,
-//         ease: Quad.easeInOut,
-//         onComplete: function () {
-//             TweenLite.to(cube.rotation, 0.4, {
-//                 z: -Math.PI * 0.9,
-//                 onComplete: function () {
-//                     TweenLite.to(cube.rotation, 0.2, {
-//                         z: -Math.PI * 1.05,
-//                         onComplete: function () {
-//                             TweenLite.to(cube.rotation, 0.1, {
-//                                 z: -Math.PI
-//                             });
-//                         }
-//                     });
-//                 }
-//             });
-//         }
-//     });
-// });
-// // var cube = new THREE.Mesh(geometry, material);
-// // // cube.castShadow = true;
-// // // cube.receiveShadow = false;
-// // scene.add(cube);
-//
-// // //Create a plane that receives shadows (but does not cast them)
-// // var planeGeometry = new THREE.BoxGeometry(10, 0.1, 10);
-// // var planeMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-// // var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-// // // plane.position.set(0, -5, 0);
-// // // plane.receiveShadow = true;
-// // scene.add(plane);
-//
-// function animate() {
-//     requestAnimationFrame(animate);
-//     // cube.rotateZ(0.1);
-//     renderer.render(scene, camera);
-// }
-//
-// animate();
-// var tween_0 = TweenLite.to(camera.position, 2, {
-//     y: 10,
-//     delay: 1,
-//     ease: Cubic.easeInOut
-// });
-// var rotObjectMatrix;
-//
-// function rotateAroundObjectAxis(object, axis, radians) {
-//     rotObjectMatrix = new THREE.Matrix4();
-//     rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
-//     object.matrix.multiply(rotObjectMatrix);
-//     object.rotation.setFromRotationMatrix(object.matrix);
-// }
-//
-// var rotationRadius = {cube_0: 0.1};
-// // var tween_1 = TweenLite.to(rotationRadius, 2 * 60, {
-// //     cube_0: -4 * 90 / 180 * Math.PI / (2 * 60),
-// //     delay: 60,
-// //     onUpdate: function () {
-// //         cube.rotateZ(rotationRadius.cube_0);
-// //         // rotateAroundObjectAxis(cube, new THREE.Vector3(0, 0, 1), rotationRadius.cube_0);
-// //     },
-// //     ease: Quad.easeInOut,
-// //     useFrames: true
-// // });
