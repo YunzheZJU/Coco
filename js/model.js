@@ -30,7 +30,7 @@ class Grid {
             child.position.y = this._position.y;
             child.scale.x = 0.01;
             child.scale.z = 0.01;
-            child.scale.y = 1;
+            child.scale.y = 0.01;
             this._cube = child;
         }
         console.log("Loading OK: " + this._num);
@@ -45,11 +45,13 @@ class Grid {
         loader.load("model/grid.obj", $.proxy(this.setGroup, this));
     }
 
-    show() {
+    show(delay) {
         scene.add(this._cube);
-        TweenLite.to(this._cube.scale, 3, {
+        TweenLite.to(this._cube.scale, 1, {
             x: 1.25,
+            y: 1,
             z: 1.25,
+            delay: delay,
             ease: Elastic.easeOut,
             onComplete: $.proxy(this.rotate, this)
         });
@@ -185,7 +187,7 @@ class Dice {
             this.isFirst = false;
         }
         else {
-            // Rotate from current number to next number
+            // Rotate from currentEvent number to next number
             console.log("Start rotating to: " + this.next);
 
             this.current = this.next;

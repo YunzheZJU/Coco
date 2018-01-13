@@ -11,8 +11,10 @@ let mouse = new THREE.Vector2(), INTERSECTED;
 let effectComposer;
 let ssaoPass;
 let grid = [];
+let event = [];
 let postprocessing = {enabled: false, onlyAO: false, radius: 5, aoClamp: 0.2, lumInfluence: 0.28};
-let current = 1;
+let currentEvent = 1;
+let numOfGridsOpened = 1;
 let status = -1;
 let frustumSize = {value: 30};
 const dice = new Dice();
@@ -50,6 +52,11 @@ function init() {
             grid.push(new Grid(tuple.num, new THREE.Vector3(tuple.x * 1.5 - 15, tuple.y + 0.4, tuple.z * 1.5 - 16.5), tuple.type, tuple.event));
         });
     });
+    $.getJSON("data/event.json", function (result) {
+        $.each(result, function (i, tuple) {
+            event.push({event: tuple.event, number: tuple.number});
+        })
+    });
 
     stats = new Stats();
     container.appendChild(stats.dom);
@@ -61,14 +68,16 @@ function init() {
     $("#go").click(function () {
         console.log("Click");
         if (status === -1) {
-            grid[current - 1].show();
+            grid[0].show(0);
+            currentEvent = 1;
+            numOfGridsOpened = 1;
             TweenLite.to(camera.position, 5, {
                 y: 10,
                 ease: Bounce.easeInOut,
             });
             TweenLite.to(camera.position, 5, {
-                x: grid[current - 1]._position.x,
-                z: grid[current - 1]._position.z,
+                x: grid[currentEvent - 1]._position.x,
+                z: grid[currentEvent - 1]._position.z,
                 ease: Power0.easeNone
             });
             status = 0;
@@ -90,15 +99,19 @@ function init() {
             });
             status = 1;
         } else if (status === 1) {
-            current += 1;
-            grid[current - 1].show();
+            for (let i = numOfGridsOpened; i < numOfGridsOpened + event[currentEvent - 1].number; i++) {
+                grid[i].show(2 + (i - numOfGridsOpened) * 0.2);
+            }
+            numOfGridsOpened += event[currentEvent - 1].number;
+            // grid[currentEvent - 1].show();
+            currentEvent += 1;
             TweenLite.to(camera.position, 2, {
                 y: 10,
                 ease: Bounce.easeOut,
             });
             TweenLite.to(camera.position, 2, {
-                x: grid[current - 1]._position.x,
-                z: grid[current - 1]._position.z,
+                x: grid[numOfGridsOpened - 1]._position.x,
+                z: grid[numOfGridsOpened - 1]._position.z,
                 ease: Power0.easeNone
             });
             status = 0;
