@@ -18,9 +18,11 @@ class Grid {
         const loader = new THREE.TextureLoader();
         this._material.map = loader.load('image/GridTexture_' + type + '_' + (num > 43 && num < 130 ? '2' : '1') + '.jpg');
         this._material.map.wrapS = THREE.RepeatWrapping;
+
+        this.load();
     }
 
-    getCube(child) {
+    setCube(child) {
         if (child instanceof THREE.Mesh) {
             child.material = this.material;
             child.position.z = this._position.z;
@@ -35,8 +37,7 @@ class Grid {
     };
 
     setGroup(group) {
-        group.traverse($.proxy(this.getCube, this));
-        this.show();
+        group.traverse($.proxy(this.setCube, this));
     }
 
     load() {
@@ -46,7 +47,7 @@ class Grid {
 
     show() {
         scene.add(this._cube);
-        TweenLite.to(this._cube.scale, 4, {
+        TweenLite.to(this._cube.scale, 3, {
             x: 1.25,
             z: 1.25,
             ease: Elastic.easeOut,
@@ -58,7 +59,7 @@ class Grid {
     rotate() {
         TweenLite.to(this._cube.rotation, 2, {
             z: -Math.PI,
-            ease: Bounce.easeIn
+            ease: Bounce.easeOut
         });
         this._isRotated = true;
     }
@@ -125,5 +126,69 @@ class Grid {
 
     set isShown(value) {
         this._isShown = value;
+    }
+}
+
+class Dice {
+    constructor() {
+        this.dice = null;
+        this._material = new THREE.MeshBasicMaterial();
+        this.isFirst = true;
+        this._position = new THREE.Vector3(0, 20, 0);
+        this.current = 1;
+        this.next = 6;
+
+        const loader = new THREE.TextureLoader();
+        this._material.map = loader.load('image/Dice.jpg');
+        this._material.map.wrapS = THREE.RepeatWrapping;
+
+        this.load();
+    }
+
+    setDice(child) {
+        if (child instanceof THREE.Mesh) {
+            child.material = this._material;
+            child.position.z = this._position.z;
+            child.position.x = this._position.x;
+            child.position.y = this._position.y;
+            child.name = "Ground";
+            this.dice = child;
+        }
+        console.log("Loading OK: Dice.");
+    };
+
+    setGroup(group) {
+        group.traverse($.proxy(this.setDice, this));
+    }
+
+    load() {
+        const loader = new THREE.OBJLoader();
+        loader.load("model/dice.obj", $.proxy(this.setGroup, this));
+    }
+
+    show() {
+        scene.add(this.dice);
+        TweenLite.to(this.dice.position, 3, {
+            y: 12,
+            ease: Bounce.easeOut,
+            onComplete: $.proxy(this.rotateTo, this)
+        });
+    }
+
+    rotateTo(number) {
+        console.log("rotateTo() is called");
+        if (number) {
+            this.next = number;
+        }
+        if (this.isFirst) {
+            this.show();
+            this.isFirst = false;
+        }
+        else {
+            // Rotate from current number to next number
+            console.log("Start rotating to: " + this.next);
+
+            this.current = this.next;
+        }
     }
 }

@@ -13,10 +13,13 @@ let ssaoPass;
 let grid = [];
 let postprocessing = {enabled: false, onlyAO: false, radius: 5, aoClamp: 0.2, lumInfluence: 0.28};
 let current = 1;
+let status = -1;
 let frustumSize = {value: 30};
+const dice = new Dice();
 
 init();
 animate();
+
 function init() {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -30,8 +33,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    const aspect = window.innerWidth / window.innerHeight;
-    camera = new THREE.OrthographicCamera(frustumSize.value * aspect / -2, frustumSize.value * aspect / 2, frustumSize.value / 2, frustumSize.value / -2, 1, 2000);
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 20, 0);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -47,53 +49,10 @@ function init() {
         $.each(result, function (i, tuple) {
             grid.push(new Grid(tuple.num, new THREE.Vector3(tuple.x * 1.5 - 15, tuple.y + 0.4, tuple.z * 1.5 - 16.5), tuple.type, tuple.event));
         });
-        // for (let g of grid) {
-        //     if (g._num < 10) {
-        //         g.load();
-        //     }
-        // }
-        grid[0].load();
-        TweenLite.to(camera, 5, {
-            zoom: 2,
-            ease: Bounce.easeInOut,
-            onUpdate: function () {
-                camera.updateProjectionMatrix();
-            }
-        });
-        TweenLite.to(camera.position, 5, {
-            x: grid[0]._position.x,
-            z: grid[0]._position.z,
-            ease: Power0.easeNone
-        });
     });
-    // grid.push(new Grid(0, new THREE.Vector3(1, 0, 1), 0));
-    // grid.push(new Grid(0, new THREE.Vector3(0, 0, 0), 0));
 
     stats = new Stats();
     container.appendChild(stats.dom);
-
-    // // Init postprocessing
-    // initPostprocessing();
-    //
-    // // Init gui
-    // let gui = new dat.GUI();
-    // gui.add(postprocessing, 'enabled');
-    //
-    // gui.add(postprocessing, 'onlyAO', false).onChange(function (value) {
-    //     ssaoPass.onlyAO = value;
-    // });
-    //
-    // gui.add(postprocessing, 'radius').min(0).max(64).onChange(function (value) {
-    //     ssaoPass.radius = value;
-    // });
-    //
-    // gui.add(postprocessing, 'aoClamp').min(0).max(1).onChange(function (value) {
-    //     ssaoPass.aoClamp = value;
-    // });
-    //
-    // gui.add(postprocessing, 'lumInfluence').min(0).max(1).onChange(function (value) {
-    //     ssaoPass.lumInfluence = value;
-    // });
 
     document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -101,6 +60,49 @@ function init() {
 
     $("#go").click(function () {
         console.log("Click");
+        if (status === -1) {
+            grid[current - 1].show();
+            TweenLite.to(camera.position, 5, {
+                y: 10,
+                ease: Bounce.easeInOut,
+            });
+            TweenLite.to(camera.position, 5, {
+                x: grid[current - 1]._position.x,
+                z: grid[current - 1]._position.z,
+                ease: Power0.easeNone
+            });
+            status = 0;
+        } else if (status === 0) {
+            TweenLite.to(camera.position, 2, {
+                y: 20,
+                ease: Back.easeOut,
+                onUpdate: function () {
+                    camera.updateProjectionMatrix();
+                },
+                onComplete: function () {
+                    dice.rotateTo(6);
+                }
+            });
+            TweenLite.to(camera.position, 2, {
+                x: 0,
+                z: 0,
+                ease: Back.easeOut,
+            });
+            status = 1;
+        } else if (status === 1) {
+            current += 1;
+            grid[current - 1].show();
+            TweenLite.to(camera.position, 2, {
+                y: 10,
+                ease: Bounce.easeOut,
+            });
+            TweenLite.to(camera.position, 2, {
+                x: grid[current - 1]._position.x,
+                z: grid[current - 1]._position.z,
+                ease: Power0.easeNone
+            });
+            status = 0;
+        }
     });
 }
 
@@ -110,43 +112,15 @@ function onWindowResize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    const aspect = width / height;
-    camera.left = -frustumSize.value * aspect / 2;
-    camera.right = frustumSize.value * aspect / 2;
-    camera.top = frustumSize.value / 2;
-    camera.bottom = -frustumSize.value / 2;
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
-    //
-    // // Resize renderTargets
-    // ssaoPass.setSize(width, height);
-    //
-    // const pixelRatio = renderer.getPixelRatio();
-    // const newWidth = Math.floor(width / pixelRatio) || 1;
-    // const newHeight = Math.floor(height / pixelRatio) || 1;
-    // effectComposer.setSize(newWidth, newHeight);
 }
 
 function onDocumentMouseMove(event) {
     event.preventDefault();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
-
-function initPostprocessing() {
-
-    // Setup render pass
-    const renderPass = new THREE.RenderPass(scene, camera);
-
-    // Setup SSAO pass
-    ssaoPass = new THREE.SSAOPass(scene, camera);
-    ssaoPass.renderToScreen = true;
-
-    // Add pass to effect composer
-    effectComposer = new THREE.EffectComposer(renderer);
-    effectComposer.addPass(renderPass);
-    effectComposer.addPass(ssaoPass);
-
 }
 
 function animate() {
@@ -161,7 +135,7 @@ function intersect() {
     const objects = scene.children.slice(1);
     const intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
-        if (INTERSECTED !== intersects[0].object) {
+        if (INTERSECTED !== intersects[0].object && intersects[0].object.name !== "Ground") {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             INTERSECTED = intersects[0].object;
             INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
@@ -178,6 +152,6 @@ function render() {
     // if (postprocessing.enabled) {
     //     effectComposer.render();
     // } else {
-        renderer.render(scene, camera);
+    renderer.render(scene, camera);
     // }
 }
