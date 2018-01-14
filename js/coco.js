@@ -41,6 +41,7 @@ function init() {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeeeeee);
+    //scene.fog=new THREE.Fog(0xffffff,0.015,100);
 
     // Grid
     const gridHelper = new THREE.GridHelper(100, 100);
@@ -54,7 +55,17 @@ function init() {
     });
     $.getJSON("data/event.json", function (result) {
         $.each(result, function (i, tuple) {
-            event.push({event: tuple.event, number: tuple.number});
+            event.push({
+                event: tuple.event,
+                number: tuple.number,
+                progress: tuple.progress,
+                location: tuple.location,
+                character: tuple.character,
+                description: tuple.description,
+                choice_1: tuple.choice_1,
+                choice_2: tuple.choice_2,
+                result: tuple.result
+            });
         })
     });
 
@@ -65,56 +76,50 @@ function init() {
 
     window.addEventListener('resize', onWindowResize, false);
 
-    $("#go").click(function () {
+    $go.click(function () {
         console.log("Click");
         if (status === -1) {
             grid[0].show(0);
             currentEvent = 1;
             numOfGridsOpened = 1;
-            TweenLite.to(camera.position, 5, {
+            TweenLite.to(camera.position, 3, {
                 y: 10,
                 ease: Bounce.easeInOut,
             });
-            TweenLite.to(camera.position, 5, {
-                x: grid[currentEvent - 1]._position.x,
-                z: grid[currentEvent - 1]._position.z,
+            TweenLite.to(camera.position, 3, {
+                x: grid[currentEvent - 1].position.x,
+                z: grid[currentEvent - 1].position.z,
                 ease: Power0.easeNone
             });
             status = 0;
         } else if (status === 0) {
-            TweenLite.to(camera.position, 2, {
-                y: 20,
-                ease: Back.easeOut,
-                onUpdate: function () {
-                    camera.updateProjectionMatrix();
-                },
-                onComplete: function () {
-                    dice.rotateTo(6);
-                }
-            });
-            TweenLite.to(camera.position, 2, {
-                x: 0,
-                z: 0,
-                ease: Back.easeOut,
-            });
+            $go.attr('disabled', true);
+            dice.rotateTo(event[currentEvent - 1].number);
             status = 1;
         } else if (status === 1) {
             for (let i = numOfGridsOpened; i < numOfGridsOpened + event[currentEvent - 1].number; i++) {
-                grid[i].show(2 + (i - numOfGridsOpened) * 0.2);
+                grid[i].show((i - numOfGridsOpened) * 0.4);
             }
             numOfGridsOpened += event[currentEvent - 1].number;
-            // grid[currentEvent - 1].show();
             currentEvent += 1;
             TweenLite.to(camera.position, 2, {
                 y: 10,
-                ease: Bounce.easeOut,
+                delay: 1,
+                ease: Back.easeInOut
             });
             TweenLite.to(camera.position, 2, {
-                x: grid[numOfGridsOpened - 1]._position.x,
-                z: grid[numOfGridsOpened - 1]._position.z,
-                ease: Power0.easeNone
+                x: grid[numOfGridsOpened - 1].position.x,
+                z: grid[numOfGridsOpened - 1].position.z,
+                delay: 1,
+                ease: Power2.easeInOut
             });
-            status = 0;
+            if (currentEvent !== 49) {
+                status = 0;
+            } else {
+                status = 2;
+            }
+        } else if (status === 2) {
+            console.log("You win!");
         }
     });
 }

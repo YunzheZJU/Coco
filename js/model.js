@@ -3,6 +3,7 @@
  */
 
 'use strict';
+const $go = $("#go");
 
 class Grid {
     constructor(num, position, type, event) {
@@ -47,7 +48,7 @@ class Grid {
 
     show(delay) {
         scene.add(this._cube);
-        TweenLite.to(this._cube.scale, 1, {
+        TweenLite.to(this._cube.scale, 1 + 0.2 * (Math.random() - 0.5), {
             x: 1.25,
             y: 1,
             z: 1.25,
@@ -133,15 +134,17 @@ class Grid {
 
 class Dice {
     constructor() {
-        this.dice = null;
+        this._dice = null;
         this._material = new THREE.MeshBasicMaterial();
-        this.isFirst = true;
-        this._position = new THREE.Vector3(0, 20, 0);
-        this.current = 1;
-        this.next = 6;
+        this._isFirst = true;
+        this._position = null;
+        this._current = 1;
+        this._next = 6;
 
         const loader = new THREE.TextureLoader();
         this._material.map = loader.load('image/Dice.jpg');
+        // this._material.needsUpdate = true;
+        this._material.transparent = true;
         this._material.map.wrapS = THREE.RepeatWrapping;
 
         this.load();
@@ -150,11 +153,15 @@ class Dice {
     setDice(child) {
         if (child instanceof THREE.Mesh) {
             child.material = this._material;
-            child.position.z = this._position.z;
+            this._position = new THREE.Vector3(camera.position.x + 5, camera.position.y + 5, camera.position.z + 5);
             child.position.x = this._position.x;
             child.position.y = this._position.y;
+            child.position.z = this._position.z;
+            child.scale.x = 1.2;
+            child.scale.y = 1.2;
+            child.scale.z = 1.2;
             child.name = "Ground";
-            this.dice = child;
+            this._dice = child;
         }
         console.log("Loading OK: Dice.");
     };
@@ -169,28 +176,151 @@ class Dice {
     }
 
     show() {
-        scene.add(this.dice);
-        TweenLite.to(this.dice.position, 3, {
-            y: 12,
-            ease: Bounce.easeOut,
-            onComplete: $.proxy(this.rotateTo, this)
-        });
+        scene.add(this._dice);
     }
 
     rotateTo(number) {
         console.log("rotateTo() is called");
         if (number) {
-            this.next = number;
+            this._next = number;
         }
-        if (this.isFirst) {
+        if (this._isFirst) {
             this.show();
-            this.isFirst = false;
+            this._isFirst = false;
         }
-        else {
-            // Rotate from currentEvent number to next number
-            console.log("Start rotating to: " + this.next);
+        // else {
+        // Rotate from currentEvent number to next number
+        console.log("Start rotating to: " + this._next);
+        this._dice.rotation.x = 0;
+        this._dice.rotation.z = 0;
+        this._dice.rotation.y = 0;
+        let r_x, r_y, r_z;
+        switch (this._next) {
+            // TODO
+            case 1:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+            case 2:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+            case 3:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+            case 4:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+            case 5:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+            case 6:
+                r_x = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * (100 + Math.random());
+                r_z = Math.PI * 2 * 100;
+                break;
+        }
+        TweenLite.to(this._dice.rotation, 1.5, {
+            x: r_x,
+            z: r_z,
+            ease: Power2.easeOut,
+            onComplete: $.proxy(function () {
+            }, this)
+        });
+        TweenLite.to(this._dice.rotation, 2, {
+            y: r_y,
+            ease: Power4.easeOut,
+            onComplete: $.proxy(function () {
+            }, this)
+        });
+        TweenLite.to(this._dice.position, 2, {
+            y: 1.5,
+            ease: Bounce.easeOut,
 
-            this.current = this.next;
-        }
+        });
+        TweenLite.to(this._dice.position, 2, {
+            x: camera.position.x + 4 * (Math.random() - 0.5),
+            z: camera.position.z - 2 * Math.random(),
+            ease: Quad.easeOut,
+            onComplete: $.proxy(function () {
+                this._material.needsUpdate = true;
+                TweenLite.to(this._material, 2, {
+                    opacity: 0,
+                    ease: Power2.easeIn,
+                    onComplete: $.proxy(function () {
+                        this._material.needsUpdate = false;
+                        this._material.opacity = 1;
+                        $go.removeAttr("disabled");
+                    }, this)
+                });
+                setTimeout($.proxy(function () {
+                    this._dice.position.x = camera.position.x + 5;
+                    this._dice.position.y = camera.position.y + 5;
+                    this._dice.position.z = camera.position.z + 5;
+                }, this), 2000);
+                setTimeout(function () {
+                    $go.click();
+                }, 1000);
+            }, this)
+        });
+
+        this._current = this._next;
+        // }
+    }
+
+    get dice() {
+        return this._dice;
+    }
+
+    set dice(value) {
+        this._dice = value;
+    }
+
+    get material() {
+        return this._material;
+    }
+
+    set material(value) {
+        this._material = value;
+    }
+
+    get isFirst() {
+        return this._isFirst;
+    }
+
+    set isFirst(value) {
+        this._isFirst = value;
+    }
+
+    get position() {
+        return this._position;
+    }
+
+    set position(value) {
+        this._position = value;
+    }
+
+    get current() {
+        return this._current;
+    }
+
+    set current(value) {
+        this._current = value;
+    }
+
+    get next() {
+        return this._next;
+    }
+
+    set next(value) {
+        this._next = value;
     }
 }
