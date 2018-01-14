@@ -25,6 +25,7 @@ let focusDown = null;
 let whoIsFetched = null;
 let readStory = {ReadStory: true};
 let choiceChosen = 0;
+let logo;
 const dice = new Dice();
 const board = new Board();
 const $percent = $("#percent");
@@ -65,6 +66,18 @@ function init() {
     // Grid
     const gridHelper = new THREE.GridHelper(100, 100);
     scene.add(gridHelper);
+
+    // Logo
+    const geometry = new THREE.PlaneGeometry(10, 10, 1);
+    const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide});
+    const loader = new THREE.TextureLoader();
+    material.map = loader.load("image/LogoTexture.jpg");
+    material.transparent = true;
+    material.map.wrapS = THREE.RepeatWrapping;
+    logo = new THREE.Mesh(geometry, material);
+    logo.position.y = 2;
+    logo.rotation.x = - Math.PI / 2;
+    scene.add(logo);
 
     $.getJSON("data/map.json", function (result) {
         $.each(result, function (i, tuple) {
@@ -118,21 +131,27 @@ function init() {
         popup.open('<img src="image/Still_' + currentEvent + '.jpg" width="1000">', 'html');
     });
     $video.popup({
-        types : {
-            youtube : function(content, callback){
-                content = '<iframe width="560" height="315" src="'+content+'" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+        types: {
+            youtube: function (content, callback) {
+                content = '<iframe width="560" height="315" src="' + content + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
                 // Don't forget to call the callback!
                 callback.call(this, content);
             }
         },
-        width : 560,
-        height : 315,
+        width: 560,
+        height: 315,
         closeContent: '',
     });
 
     $go.click(function () {
         if (status === -1) {
-            // board.show();
+            TweenLite.to(material, 1, {
+                opacity: 0,
+                ease: Power0.easeNone,
+                onComplete: function () {
+                    scene.remove(logo);
+                }
+            });
             $go.attr('disabled', true);
             $go[0].innerHTML = "↓";
             grid[0].show(0);
@@ -296,7 +315,7 @@ function onDocumentMouseUp(e) {
             let eventNumber;
             if (grid[whoIsFetched].event < 8.4) {
                 eventNumber = grid[whoIsFetched].event - 1;
-            } else if (grid[whoIsFetched].event  > 8.5 && grid[whoIsFetched].event < 43) {
+            } else if (grid[whoIsFetched].event > 8.5 && grid[whoIsFetched].event < 43) {
                 eventNumber = grid[whoIsFetched].event;
             } else if (grid[whoIsFetched].event > 44) {
                 eventNumber = grid[whoIsFetched].event - 2;

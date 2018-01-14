@@ -267,7 +267,6 @@ class Dice {
 
         const loader = new THREE.TextureLoader();
         this._material.map = loader.load('image/DiceTexture.jpg');
-        // this._material.needsUpdate = true;
         this._material.transparent = true;
         this._material.map.wrapS = THREE.RepeatWrapping;
 
