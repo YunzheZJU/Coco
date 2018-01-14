@@ -17,6 +17,7 @@ let currentEvent = 1;
 let numOfGridsOpened = 1;
 let status = -1;
 let frustumSize = {value: 30};
+let selectable = true;
 const dice = new Dice();
 
 init();
@@ -41,11 +42,10 @@ function init() {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeeeeee);
-    //scene.fog=new THREE.Fog(0xffffff,0.015,100);
+    scene.fog = new THREE.Fog(0xf0f0f0, 19, 20);
 
     // Grid
     const gridHelper = new THREE.GridHelper(100, 100);
-    grid.name = "Ground";
     scene.add(gridHelper);
 
     $.getJSON("data/map.json", function (result) {
@@ -77,14 +77,18 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
     $go.click(function () {
-        console.log("Click");
         if (status === -1) {
             grid[0].show(0);
             currentEvent = 1;
             numOfGridsOpened = 1;
+            TweenLite.to(scene.fog, 3, {
+                near: 11,
+                far: 12,
+                ease: Bounce.easeInOut
+            });
             TweenLite.to(camera.position, 3, {
                 y: 10,
-                ease: Bounce.easeInOut,
+                ease: Bounce.easeInOut
             });
             TweenLite.to(camera.position, 3, {
                 x: grid[currentEvent - 1].position.x,
@@ -94,6 +98,7 @@ function init() {
             status = 0;
         } else if (status === 0) {
             $go.attr('disabled', true);
+            selectable = false;
             dice.rotateTo(event[currentEvent - 1].number);
             status = 1;
         } else if (status === 1) {
@@ -153,7 +158,7 @@ function intersect() {
     const objects = scene.children.slice(1);
     const intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
-        if (INTERSECTED !== intersects[0].object && intersects[0].object.name !== "Ground") {
+        if (INTERSECTED !== intersects[0].object && intersects[0].object.name === "Selectable" && selectable) {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             INTERSECTED = intersects[0].object;
             INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
@@ -167,9 +172,5 @@ function intersect() {
 
 function render() {
     intersect();
-    // if (postprocessing.enabled) {
-    //     effectComposer.render();
-    // } else {
     renderer.render(scene, camera);
-    // }
 }

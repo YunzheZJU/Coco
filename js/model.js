@@ -32,6 +32,9 @@ class Grid {
             child.scale.x = 0.01;
             child.scale.z = 0.01;
             child.scale.y = 0.01;
+            if (this._type !== 1) {
+                child.name = "Selectable";
+            }
             this._cube = child;
         }
         console.log("Loading OK: " + this._num);
@@ -160,7 +163,6 @@ class Dice {
             child.scale.x = 1.2;
             child.scale.y = 1.2;
             child.scale.z = 1.2;
-            child.name = "Ground";
             this._dice = child;
         }
         console.log("Loading OK: Dice.");
@@ -180,7 +182,6 @@ class Dice {
     }
 
     rotateTo(number) {
-        console.log("rotateTo() is called");
         if (number) {
             this._next = number;
         }
@@ -192,35 +193,34 @@ class Dice {
         // Rotate from currentEvent number to next number
         console.log("Start rotating to: " + this._next);
         this._dice.rotation.x = 0;
-        this._dice.rotation.z = 0;
         this._dice.rotation.y = 0;
+        this._dice.rotation.z = 0;
         let r_x, r_y, r_z;
         switch (this._next) {
-            // TODO
             case 1:
                 r_x = Math.PI * 2 * 100;
                 r_y = Math.PI * 2 * (100 + Math.random());
-                r_z = Math.PI * 2 * 100;
+                r_z = Math.PI * 2 * 100 + Math.PI;
                 break;
             case 2:
                 r_x = Math.PI * 2 * 100;
-                r_y = Math.PI * 2 * (100 + Math.random());
-                r_z = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * 100;
+                r_z = Math.PI * 2 * 100 - Math.PI / 2;
                 break;
             case 3:
-                r_x = Math.PI * 2 * 100;
-                r_y = Math.PI * 2 * (100 + Math.random());
-                r_z = Math.PI * 2 * 100;
+                r_x = Math.PI * 2 * 100 - Math.PI / 2;
+                r_y = Math.PI * 2 * 100;
+                r_z = Math.PI * 2 * (100 + Math.random());
                 break;
             case 4:
-                r_x = Math.PI * 2 * 100;
-                r_y = Math.PI * 2 * (100 + Math.random());
-                r_z = Math.PI * 2 * 100;
+                r_x = Math.PI * 2 * 100 + Math.PI / 2;
+                r_y = Math.PI * 2 * 100;
+                r_z = Math.PI * 2 * (100 + Math.random());
                 break;
             case 5:
                 r_x = Math.PI * 2 * 100;
-                r_y = Math.PI * 2 * (100 + Math.random());
-                r_z = Math.PI * 2 * 100;
+                r_y = Math.PI * 2 * 100;
+                r_z = Math.PI * 2 * 100 + Math.PI / 2;
                 break;
             case 6:
                 r_x = Math.PI * 2 * 100;
@@ -259,6 +259,11 @@ class Dice {
                         this._material.needsUpdate = false;
                         this._material.opacity = 1;
                         $go.removeAttr("disabled");
+                        selectable = true;
+                        TweenLite.to(scene.fog, 0.75, {
+                            near: 11,
+                            far: 12
+                        });
                     }, this)
                 });
                 setTimeout($.proxy(function () {
@@ -270,6 +275,10 @@ class Dice {
                     $go.click();
                 }, 1000);
             }, this)
+        });
+        TweenLite.to(scene.fog, 1, {
+            near: 7,
+            far: 11,
         });
 
         this._current = this._next;
