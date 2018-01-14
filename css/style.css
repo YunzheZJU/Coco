@@ -6,10 +6,10 @@ body {
     font-size: 13px;
     text-align: center;
     font-weight: bold;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 a {
@@ -93,4 +93,17 @@ canvas {
 
 .century {
     font-family: Century, serif;
+}
+
+#image {
+    position: absolute;
+    top: 0;
+    right: 600px;
+    width: auto;
+    height: 200px;
+    background-image: url("../image/Still_1.jpg");
+}
+
+#video {
+
 }

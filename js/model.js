@@ -14,7 +14,7 @@ class Grid {
         this._num = num;
         this._position = position;
         this._type = type;
-        this._event = event;
+        this._board = event;
 
         const loader = new THREE.TextureLoader();
         this._material.map = loader.load('image/GridTexture_' + type + '_' + (num > 43 && num < 130 ? '2' : '1') + '.jpg');
@@ -25,7 +25,7 @@ class Grid {
 
     setCube(child) {
         if (child instanceof THREE.Mesh) {
-            child.material = this.material;
+            child.material = this._material;
             child.position.z = this._position.z;
             child.position.x = this._position.x;
             child.position.y = this._position.y;
@@ -130,7 +130,7 @@ class Grid {
                 far: 10,
             });
             TweenLite.to(this._cube.position, 1, {
-                x: camera.position.x - 1,
+                x: camera.position.x - 1.5,
                 y: camera.position.y - 3,
                 z: camera.position.z
             });
@@ -139,7 +139,8 @@ class Grid {
             });
             this._switch = true;
             this.freeRotatingYZ();
-            setTimeout($.proxy(this.back, this), 5000);
+            board.show();
+            // setTimeout($.proxy(this.back, this), 5000);
         }
     }
 
@@ -162,7 +163,7 @@ class Grid {
             y: parseInt(r_y / 2 / (Math.PI)) * 2 * Math.PI,
             z: parseInt(r_z / 2 / (Math.PI)) * 2 * Math.PI + Math.PI,
             onComplete: onBack
-        })
+        });
     }
 
     get num() {
@@ -214,11 +215,11 @@ class Grid {
     }
 
     get event() {
-        return this._event;
+        return this._board;
     }
 
     set event(value) {
-        this._event = value;
+        this._board = value;
     }
 
     get isShown() {
@@ -250,7 +251,7 @@ class Dice {
     setDice(child) {
         if (child instanceof THREE.Mesh) {
             child.material = this._material;
-            this._position = new THREE.Vector3(camera.position.x + 5, camera.position.y + 5, camera.position.z + 5);
+            this._position = new THREE.Vector3(camera.position.x + 8, camera.position.y + 5, camera.position.z + 8);
             child.position.x = this._position.x;
             child.position.y = this._position.y;
             child.position.z = this._position.z;
@@ -415,5 +416,118 @@ class Dice {
 
     set next(value) {
         this._next = value;
+    }
+}
+
+class Board {
+    constructor() {
+        this._board = null;
+        this._material = new THREE.MeshBasicMaterial();
+        this._position = new THREE.Vector3(0, 0, 0);
+        this._isShown = false;
+
+        this._loader = new THREE.TextureLoader();
+        this._material.map = this._loader.load('image/BoardTexture.jpg');
+        this._material.alphaMap = this._loader.load('image/BoardAlpha.jpg');
+        this._material.transparent = true;
+        this._material.map.wrapS = THREE.RepeatWrapping;
+
+        this.load();
+    }
+
+    setCube(child) {
+        if (child instanceof THREE.Mesh) {
+            child.material = this._material;
+            child.position.z = this._position.z;
+            child.position.x = this._position.x;
+            child.position.y = this._position.y;
+            child.position.y = 2;
+            child.scale.x = 0.001;
+            child.scale.z = 0.001;
+            child.name = "Event_0";
+            this._board = child;
+        }
+        console.log("Loading OK: Board");
+    };
+
+    setGroup(group) {
+        group.traverse($.proxy(this.setCube, this));
+    }
+
+    load() {
+        const loader = new THREE.OBJLoader();
+        loader.load("model/board.obj", $.proxy(this.setGroup, this));
+    }
+
+    setTexture(number) {
+        // this._material.map = this._loader.load('image/BoardTexture_' + number + '.jpg');
+        this._material.map = this._loader.load('image/BoardTexture.jpg');
+        this._material.needsUpdate = true;
+    }
+
+    show() {
+        this._isShown = true;
+        this.setTexture(currentEvent);
+        this._board.position.x = camera.position.x + 1;
+        this._board.position.y = camera.position.y - 3;
+        this._board.position.z = camera.position.z;
+        scene.add(this._board);
+        TweenLite.to(this._board.scale, 2, {
+            x: 0.5,
+            z: 0.5,
+            delay: 0.5,
+            ease: Elastic.easeOut.config(0.5, 0.3),
+        });
+    }
+
+    hide() {
+        if (this._isShown) {
+            this._isShown = false;
+            TweenLite.to(this._board.scale, 1, {
+                x: 0.001,
+                z: 0.001,
+                ease: Expo.easeOut,
+                onComplete: $.proxy(function () {
+                    scene.remove(this._board);
+                }, this)
+            });
+            TweenLite.to(this._board.position, 2, {
+                x: camera.position.x + 8,
+                y: camera.position.y - 3,
+                z: camera.position.z - 5
+            });
+        }
+    }
+
+    get board() {
+        return this._board;
+    }
+
+    set board(value) {
+        this._board = value;
+    }
+
+    get material() {
+        return this._material;
+    }
+
+    set material(value) {
+        this._material = value;
+    }
+
+    get position() {
+        return this._position;
+    }
+
+    set position(value) {
+        this._position = value;
+    }
+
+    get loader() {
+        return this._loader;
+    }
+
+    set loader(value) {
+        this._loader = value;
     }
 }

@@ -8,7 +8,7 @@
 var tanFOV = Math.tan( ( ( Math.PI / 180 ) * camera.fov / 2 ) );
 var windowHeight = window.innerHeight;
 
-// Event Listeners
+// Board Listeners
 // -----------------------------------------------------------------------------
 window.addEventListener( 'resize', onWindowResize, false );
 

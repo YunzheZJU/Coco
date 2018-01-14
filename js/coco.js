@@ -25,9 +25,10 @@ let clickCount = parseInt(4 * Math.random());
 let focus = null;
 let focusDown = null;
 let focusUp = null;
-// let bReadStory = true;
+let whoIsFetched = null;
 let readStory = {ReadStory: true};
 const dice = new Dice();
+const board = new Board();
 const $percent = $("#percent");
 const $circle = $("#circle");
 const $click = $(".click");
@@ -110,6 +111,7 @@ function init() {
 
     $go.click(function () {
         if (status === -1) {
+            // board.show();
             $go.attr('disabled', true);
             $go[0].innerHTML = "↓";
             grid[0].show(0);
@@ -155,6 +157,7 @@ function init() {
                     onComplete: function () {
                         ////////////////Read the story//////////////////////
                         if (readStory.ReadStory) {
+                            whoIsFetched = numOfGridsOpened - 1;
                             grid[numOfGridsOpened - 1].fetch();
                         } else {
                             onBack();
@@ -265,7 +268,13 @@ function onDocumentMouseUp(event) {
     isdragging = false;
     if (focusDown && (focus === focusDown)) {
         const number = parseInt(focus);
-        grid[number - 1].fetch();
+        if (number === 0) {
+            grid[whoIsFetched].back();
+            board.hide();
+        } else {
+            whoIsFetched = number - 1;
+            grid[number - 1].fetch();
+        }
     }
     // console.log("Mouse Up: " + focus);
 }
@@ -294,14 +303,14 @@ function intersect() {
     const intersects = raycaster.intersectObjects(objects);
     focus = null;
     if (intersects.length > 0) {
-        if (INTERSECTED !== intersects[0].object && intersects[0].object.name.slice(0, 5) === "Event" && selectable) {
+        focus = intersects[0].object.name.slice(6);
+        if (INTERSECTED !== intersects[0].object && intersects[0].object.name.slice(0, 5) === "Event" && focus !== '0' && selectable) {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             // Save the color of the object
             INTERSECTED = intersects[0].object;
             INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-            INTERSECTED.material.color.setHex(0xff0000);
+            INTERSECTED.material.color.setHex(0xf99e1a);
         }
-        focus = intersects[0].object.name.slice(6);
     } else {
         // Return the color to the object
         if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
