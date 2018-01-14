@@ -4,7 +4,9 @@
 
 'use strict';
 const $go = $("#go");
-const $pup = $("#pup");
+const $image = $("#image");
+const $video = $("#video");
+const imgPosition = {value: -500};
 
 class Grid {
     constructor(num, position, type, event) {
@@ -86,7 +88,11 @@ class Grid {
                     x: grid[numOfGridsOpened - 1].position.x,
                     z: grid[numOfGridsOpened - 1].position.z,
                     delay: 1.75,
-                    ease: Power2.easeInOut
+                    ease: Power2.easeInOut,
+                    onComplete: function () {
+                        selectable = true;
+                        $go.removeAttr("disabled");
+                    }
                 });
             }, this)
         });
@@ -141,7 +147,18 @@ class Grid {
             this._switch = true;
             this.freeRotatingYZ();
             board.show();
-            // $pup.style.top = "0";
+            TweenLite.to(imgPosition, 2, {
+                value: 0,
+                ease: Bounce.easeOut,
+                onStart: function () {
+                    $("#img")[0].src = "image/Still_" + currentEvent + ".jpg";
+                    $("#vid")[0].src = "image/Still_" + (currentEvent + 1) + ".jpg";
+                },
+                onUpdate: function () {
+                    $image[0].style.top = parseInt(imgPosition.value) + "px";
+                    $video[0].style.top = parseInt(imgPosition.value) + "px";
+                }
+            });
         }
     }
 
@@ -164,6 +181,14 @@ class Grid {
             y: parseInt(r_y / 2 / (Math.PI)) * 2 * Math.PI,
             z: parseInt(r_z / 2 / (Math.PI)) * 2 * Math.PI + Math.PI,
             onComplete: onBack
+        });
+        TweenLite.to(imgPosition, 2, {
+            value: -500,
+            // ease: Bounce.easeOut,
+            onUpdate: function () {
+                $image[0].style.top = parseInt(imgPosition.value) + "px";
+                $video[0].style.top = parseInt(imgPosition.value) + "px";
+            }
         });
     }
 
@@ -492,7 +517,7 @@ class Board {
                     scene.remove(this._board);
                 }, this)
             });
-            TweenLite.to(this._board.position, 2, {
+            TweenLite.to(this._board.position, 1, {
                 x: camera.position.x + 8,
                 y: camera.position.y - 3,
                 z: camera.position.z - 5

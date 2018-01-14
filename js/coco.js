@@ -5,28 +5,26 @@
 'use strict';
 if (!Detector.webgl) Detector.addGetWebGLMessage();
 
+let popup;
 let container, stats;
 let camera, scene, raycaster, renderer;
 let mouse = new THREE.Vector2(), INTERSECTED;
-let effectComposer;
-let ssaoPass;
 let grid = [];
 let event = [];
-let postprocessing = {enabled: false, onlyAO: false, radius: 5, aoClamp: 0.2, lumInfluence: 0.28};
 let currentEvent = 1;
 let numOfGridsOpened = 1;
 let status = -1;
-let frustumSize = {value: 30};
 let selectable = true;
+let isChoosing = false;
 let isdragging = false;
 let currentProgress = {number: 0};
 let relatedNumber = 0;
 let clickCount = parseInt(4 * Math.random());
 let focus = null;
 let focusDown = null;
-let focusUp = null;
 let whoIsFetched = null;
 let readStory = {ReadStory: true};
+let choiceChosen = 0;
 const dice = new Dice();
 const board = new Board();
 const $percent = $("#percent");
@@ -109,6 +107,27 @@ function init() {
     });
     $click.click();
 
+    $image.click(function () {
+        isChoosing = false;
+        let popup = new $.Popup({
+            afterClose: function () {
+                isChoosing = true;
+            }
+        });
+        popup.open('<img src="image/Still_' + currentEvent + '.jpg" width="1000">', 'html');
+    });
+    $video.popup({
+        types : {
+            youtube : function(content, callback){
+                content = '<iframe width="560" height="315" src="'+content+'" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+                // Don't forget to call the callback!
+                callback.call(this, content);
+            }
+        },
+        width : 560,
+        height : 315
+    });
+
     $go.click(function () {
         if (status === -1) {
             // board.show();
@@ -187,9 +206,7 @@ function init() {
 }
 
 function onBack() {
-    selectable = true;
-    $go.removeAttr("disabled");
-    ///////////After reading the story//////////////////
+    /////////////Show related events////////////////////
     if (event[currentEvent - 1].related !== 0) {
         relatedNumber = event[currentEvent - 1].related;
 
@@ -235,7 +252,11 @@ function onBack() {
                 grid[relatedNumber].popup();
             }
         });
+    } else {
+        selectable = true;
+        $go.removeAttr("disabled");
     }
+    // Update progress
     TweenLite.to(currentProgress, 2, {
         number: event[currentEvent].progress,
         onUpdate: function () {
@@ -254,30 +275,71 @@ function onWindowResize() {
     renderer.setSize(width, height);
 }
 
-function onDocumentWheel(event) {
-    camera.position.y *= (event.wheelDelta > 0 ? 0.9 : 1.1);
+function onDocumentWheel(e) {
+    camera.position.y *= (e.wheelDelta > 0 ? 0.9 : 1.1);
 }
 
-function onDocumentMouseDown(event) {
+function onDocumentMouseDown(e) {
     isdragging = true;
     focusDown = focus;
-    console.log("Mouse down: " + focusDown);
+    // console.log("Mouse down: " + focusDown);
 }
 
-function onDocumentMouseUp(event) {
+function onDocumentMouseUp(e) {
     isdragging = false;
     if (focusDown && (focus === focusDown)) {
         const number = parseInt(focus);
-        console.log(number);
-        if (number === 0) {
-            grid[whoIsFetched].back();
-            board.hide();
+        // console.log(number);
+        if (number === 0 && !isChoosing) {
+            let eventNumber;
+            if (grid[whoIsFetched].event < 8.4) {
+                eventNumber = grid[whoIsFetched].event - 1;
+            } else if (grid[whoIsFetched].event  > 8.5 && grid[whoIsFetched].event < 43) {
+                eventNumber = grid[whoIsFetched].event;
+            } else if (grid[whoIsFetched].event > 44) {
+                eventNumber = grid[whoIsFetched].event - 2;
+            } else {
+                eventNumber = 8;
+            }
+            if (event[eventNumber].choice_1 !== "") {
+                // Popup choices
+                choiceChosen = 0;
+                popup = new $.Popup({
+                    afterClose: function () {
+                        console.log("Your choice: " + choiceChosen);
+                        let anotherPopup = new $.Popup({
+                            backOpacity: 0.2,
+                            afterClose: function () {
+                                grid[whoIsFetched].back();
+                                board.hide();
+                                isChoosing = false;
+                            }
+                        });
+                        anotherPopup.open('<h1>米格的选择</h1>' +
+                            '<p>' + event[eventNumber].choice_1 + '</p>' +
+                            '<p>' + event[eventNumber].result + '</p>', 'html');
+                    },
+                    backOpacity: 0.8,
+                    modal: true,
+                    closeContent: ''
+                });
+                isChoosing = true;
+                popup.open('<h1>请选择</h1>' +
+                    '<p onclick="choiceChosen = 1;popup.close();" class="choice">' + event[eventNumber].choice_1 + '</p>' +
+                    '<p onclick="choiceChosen = 2;popup.close();" class="choice">' + event[eventNumber].choice_2 + '</p>', 'html');
+            }
+            else {
+                grid[whoIsFetched].back();
+                board.hide();
+            }
         } else {
-            whoIsFetched = number - 1;
-            grid[number - 1].fetch();
+            if (selectable) {
+                whoIsFetched = number - 1;
+                grid[number - 1].fetch();
+            }
         }
     }
-    console.log("Mouse Up: " + focus + ", " + focusDown);
+    // console.log("Mouse Up: " + focus + ", " + focusDown);
 }
 
 function onDocumentMouseMove(event) {
@@ -305,7 +367,7 @@ function intersect() {
     focus = null;
     if (intersects.length > 0) {
         focus = intersects[0].object.name.slice(6);
-        console.log("INTERSECT: " + focus);
+        // console.log("INTERSECT: " + focus);
         if (INTERSECTED !== intersects[0].object && intersects[0].object.name.slice(0, 5) === "Event" && focus !== '0' && selectable) {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             // Save the color of the object

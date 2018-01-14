@@ -95,14 +95,27 @@ canvas {
     font-family: Century, serif;
 }
 
-#image {
+#image, #video {
     position: absolute;
     top: -500px;
-    right: 600px;
     width: 250px;
     height: auto;
 }
 
-#video {
+#image {
+    right: 600px;
+}
 
+#video {
+    right: 250px;
+}
+
+.choice {
+    font-size: 1.5em;
+    line-height: 1.5em;
+    background-image: url("../image/choice_normal.jpg");
+}
+
+.choice:hover, .choice:active {
+    background-image: url("../image/choice_active.jpg");
 }
