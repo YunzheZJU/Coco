@@ -33,6 +33,13 @@ canvas {
     height: 100%
 }
 
+#gui {
+    position: absolute;
+    top: 0;
+    left: 100px;
+    height: 100px;
+}
+
 .go {
     position: absolute;
     bottom: 20px;

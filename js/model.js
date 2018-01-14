@@ -108,6 +108,8 @@ class Grid {
                 ease: Bounce.easeOut
             });
             this._isRotated = true;
+        } else {
+            this.spin();
         }
     }
 
@@ -120,23 +122,25 @@ class Grid {
     }
 
     fetch() {
-        selectable = false;
-        $go.attr('disabled', true);
-        TweenLite.to(scene.fog, 1, {
-            near: 3,
-            far: 10,
-        });
-        TweenLite.to(this._cube.position, 1, {
-            x: camera.position.x - 1,
-            y: camera.position.y - 3,
-            z: camera.position.z
-        });
-        TweenLite.to(this._cube.rotation, 1, {
-            x: Math.PI / 4 * 3
-        });
-        this._switch = true;
-        this.freeRotatingYZ();
-        setTimeout($.proxy(this.back, this), 5000);
+        if (this._isRotated) {
+            selectable = false;
+            $go.attr('disabled', true);
+            TweenLite.to(scene.fog, 1, {
+                near: 3,
+                far: 10,
+            });
+            TweenLite.to(this._cube.position, 1, {
+                x: camera.position.x - 1,
+                y: camera.position.y - 3,
+                z: camera.position.z
+            });
+            TweenLite.to(this._cube.rotation, 1, {
+                x: Math.PI / 4 * 3
+            });
+            this._switch = true;
+            this.freeRotatingYZ();
+            setTimeout($.proxy(this.back, this), 5000);
+        }
     }
 
     back() {
@@ -157,63 +161,7 @@ class Grid {
             x: 0,
             y: parseInt(r_y / 2 / (Math.PI)) * 2 * Math.PI,
             z: parseInt(r_z / 2 / (Math.PI)) * 2 * Math.PI + Math.PI,
-            onComplete: function () {
-                selectable = true;
-                $go.removeAttr("disabled");
-                ///////////After reading the story//////////////////
-                if (event[currentEvent - 1].related !== 0) {
-                    relatedNumber = event[currentEvent - 1].related;
-
-                    const curve = new THREE.SplineCurve([
-                        new THREE.Vector2(grid[numOfGridsOpened - 1].position.x, grid[numOfGridsOpened - 1].position.z),
-                        new THREE.Vector2(grid[numOfGridsOpened - 1].position.x - 1, grid[numOfGridsOpened - 1].position.z - 2),
-                        new THREE.Vector2(grid[relatedNumber].position.x + 1, grid[relatedNumber].position.z + 2),
-                        new THREE.Vector2(grid[relatedNumber].position.x, grid[relatedNumber].position.z)
-                    ]);
-                    const points = curve.getPoints(100);
-                    const geometry = new THREE.Geometry().setFromPoints(points);
-                    geometry.computeLineDistances();
-                    const material = new THREE.LineDashedMaterial({
-                        color: COLOR_HEX[parseInt(Math.random() * 4)],
-                        linewidth: 2,
-                        scale: 1,
-                        dashSize: 0.2,
-                        gapSize: 0.2,
-                    });
-                    // Create the final object to add to the scene
-                    const splineObject = new THREE.Line(geometry, material);
-                    splineObject.rotation.x = Math.PI / 2;
-                    splineObject.position.y = 0.2;
-                    scene.add(splineObject);
-
-                    // Move the camera
-                    TweenLite.to(camera.position, 2, {
-                        y: 12,
-                        ease: Sine.easeOut,
-                        onComplete: function () {
-                            TweenLite.to(camera.position, 2, {
-                                y: 10,
-                                ease: Sine.easeIn
-                            })
-                        }
-                    });
-                    TweenLite.to(camera.position, 4, {
-                        x: grid[relatedNumber].position.x,
-                        y: 10,
-                        z: grid[relatedNumber].position.z,
-                        delay: 2,
-                        onComplete: function () {
-                            grid[relatedNumber].popup();
-                        }
-                    });
-                }
-                TweenLite.to(currentProgress, 2, {
-                    number: event[currentEvent].progress,
-                    onUpdate: function () {
-                        $percent[0].innerHTML = currentProgress.number.toFixed(0);
-                    }
-                });
-            }
+            onComplete: onBack
         })
     }
 
@@ -291,7 +239,7 @@ class Dice {
         this._next = 6;
 
         const loader = new THREE.TextureLoader();
-        this._material.map = loader.load('image/Dice.jpg');
+        this._material.map = loader.load('image/DiceTexture.jpg');
         // this._material.needsUpdate = true;
         this._material.transparent = true;
         this._material.map.wrapS = THREE.RepeatWrapping;

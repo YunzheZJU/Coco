@@ -25,6 +25,8 @@ let clickCount = parseInt(4 * Math.random());
 let focus = null;
 let focusDown = null;
 let focusUp = null;
+// let bReadStory = true;
+let readStory = {ReadStory: true};
 const dice = new Dice();
 const $percent = $("#percent");
 const $circle = $("#circle");
@@ -55,6 +57,11 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeeeeee);
     scene.fog = new THREE.Fog(0xf0f0f0, 19, 20);
+
+    // Init gui
+    const gui = new dat.GUI();
+    gui.domElement.id = 'gui';
+    gui.add(readStory, 'ReadStory');
 
     // Grid
     const gridHelper = new THREE.GridHelper(100, 100);
@@ -104,7 +111,7 @@ function init() {
     $go.click(function () {
         if (status === -1) {
             $go.attr('disabled', true);
-            $go[0].innerHTML  = "↓";
+            $go[0].innerHTML = "↓";
             grid[0].show(0);
             currentEvent = 1;
             numOfGridsOpened = 1;
@@ -147,7 +154,11 @@ function init() {
                     ease: Power2.easeInOut,
                     onComplete: function () {
                         ////////////////Read the story//////////////////////
-                        grid[numOfGridsOpened - 1].fetch();
+                        if (readStory.ReadStory) {
+                            grid[numOfGridsOpened - 1].fetch();
+                        } else {
+                            onBack();
+                        }
                     }
                 });
                 status = 0;
@@ -172,6 +183,63 @@ function init() {
     });
 }
 
+function onBack() {
+    selectable = true;
+    $go.removeAttr("disabled");
+    ///////////After reading the story//////////////////
+    if (event[currentEvent - 1].related !== 0) {
+        relatedNumber = event[currentEvent - 1].related;
+
+        const curve = new THREE.SplineCurve([
+            new THREE.Vector2(grid[numOfGridsOpened - 1].position.x, grid[numOfGridsOpened - 1].position.z),
+            new THREE.Vector2(grid[numOfGridsOpened - 1].position.x - 1, grid[numOfGridsOpened - 1].position.z - 2),
+            new THREE.Vector2(grid[relatedNumber].position.x + 1, grid[relatedNumber].position.z + 2),
+            new THREE.Vector2(grid[relatedNumber].position.x, grid[relatedNumber].position.z)
+        ]);
+        const points = curve.getPoints(100);
+        const geometry = new THREE.Geometry().setFromPoints(points);
+        geometry.computeLineDistances();
+        const material = new THREE.LineDashedMaterial({
+            color: COLOR_HEX[parseInt(Math.random() * 4)],
+            linewidth: 2,
+            scale: 1,
+            dashSize: 0.2,
+            gapSize: 0.2,
+        });
+        // Create the final object to add to the scene
+        const splineObject = new THREE.Line(geometry, material);
+        splineObject.rotation.x = Math.PI / 2;
+        splineObject.position.y = 0.2;
+        scene.add(splineObject);
+
+        // Move the camera
+        TweenLite.to(camera.position, 2, {
+            y: 12,
+            ease: Sine.easeOut,
+            onComplete: function () {
+                TweenLite.to(camera.position, 2, {
+                    y: 10,
+                    ease: Sine.easeIn
+                })
+            }
+        });
+        TweenLite.to(camera.position, 4, {
+            x: grid[relatedNumber].position.x,
+            y: 10,
+            z: grid[relatedNumber].position.z,
+            delay: 2,
+            onComplete: function () {
+                grid[relatedNumber].popup();
+            }
+        });
+    }
+    TweenLite.to(currentProgress, 2, {
+        number: event[currentEvent].progress,
+        onUpdate: function () {
+            $percent[0].innerHTML = currentProgress.number.toFixed(0);
+        }
+    });
+}
 
 function onWindowResize() {
 
