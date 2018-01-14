@@ -21,7 +21,10 @@ let selectable = true;
 let isdragging = false;
 let currentProgress = {number: 0};
 let relatedNumber = 0;
-let clickCount = 3;
+let clickCount = parseInt(4 * Math.random());
+let focus = null;
+let focusDown = null;
+let focusUp = null;
 const dice = new Dice();
 const $percent = $("#percent");
 const $circle = $("#circle");
@@ -96,9 +99,12 @@ function init() {
             console.log("20202002020202");
         }
     });
+    $click.click();
 
     $go.click(function () {
         if (status === -1) {
+            $go.attr('disabled', true);
+            $go[0].innerHTML  = "↓";
             grid[0].show(0);
             currentEvent = 1;
             numOfGridsOpened = 1;
@@ -129,72 +135,19 @@ function init() {
             numOfGridsOpened += event[currentEvent - 1].number;
             currentEvent += 1;
             if (currentEvent !== 49) {
-                TweenLite.to(camera.position, 2, {
+                TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
                     y: 10,
                     delay: 1,
                     ease: Back.easeInOut
                 });
-                TweenLite.to(camera.position, 2, {
+                TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
                     x: grid[numOfGridsOpened - 1].position.x,
                     z: grid[numOfGridsOpened - 1].position.z,
                     delay: 1,
                     ease: Power2.easeInOut,
                     onComplete: function () {
                         ////////////////Read the story//////////////////////
-
-                        ///////////After reading the story//////////////////
-                        if (event[currentEvent - 1].related !== 0) {
-                            relatedNumber = event[currentEvent - 1].related;
-
-                            const curve = new THREE.SplineCurve([
-                                new THREE.Vector2(grid[numOfGridsOpened - 1].position.x, grid[numOfGridsOpened - 1].position.z),
-                                new THREE.Vector2(grid[numOfGridsOpened - 1].position.x - 1, grid[numOfGridsOpened - 1].position.z - 2),
-                                new THREE.Vector2(grid[relatedNumber].position.x + 1, grid[relatedNumber].position.z + 2),
-                                new THREE.Vector2(grid[relatedNumber].position.x, grid[relatedNumber].position.z)
-                            ]);
-                            const points = curve.getPoints(100);
-                            const geometry = new THREE.Geometry().setFromPoints(points);
-                            geometry.computeLineDistances();
-                            const material = new THREE.LineDashedMaterial({
-                                color: COLOR_HEX[parseInt(Math.random() * 4)],
-                                linewidth: 2,
-                                scale: 1,
-                                dashSize: 0.2,
-                                gapSize: 0.2,
-                            });
-                            // Create the final object to add to the scene
-                            const splineObject = new THREE.Line(geometry, material);
-                            splineObject.rotation.x = Math.PI / 2;
-                            splineObject.position.y = 0.2;
-                            scene.add(splineObject);
-
-                            // Move the camera
-                            TweenLite.to(camera.position, 2, {
-                                y: 12,
-                                ease: Sine.easeOut,
-                                onComplete: function () {
-                                    TweenLite.to(camera.position, 2, {
-                                        y: 10,
-                                        ease: Sine.easeIn
-                                    })
-                                }
-                            });
-                            TweenLite.to(camera.position, 4, {
-                                x: grid[relatedNumber].position.x,
-                                y: 10,
-                                z: grid[relatedNumber].position.z,
-                                delay: 2,
-                                onComplete: function () {
-                                    grid[relatedNumber].popup();
-                                }
-                            });
-                        }
-                        TweenLite.to(currentProgress, 2, {
-                            number: event[currentEvent].progress,
-                            onUpdate: function () {
-                                $percent[0].innerHTML = currentProgress.number.toFixed(0);
-                            }
-                        });
+                        grid[numOfGridsOpened - 1].fetch();
                     }
                 });
                 status = 0;
@@ -236,14 +189,22 @@ function onDocumentWheel(event) {
 
 function onDocumentMouseDown(event) {
     isdragging = true;
+    focusDown = focus;
+    // console.log("Mouse down: " + focusDown);
 }
 
 function onDocumentMouseUp(event) {
     isdragging = false;
+    if (focusDown && (focus === focusDown)) {
+        const number = parseInt(focus);
+        grid[number - 1].fetch();
+    }
+    // console.log("Mouse Up: " + focus);
 }
 
 function onDocumentMouseMove(event) {
     event.preventDefault();
+    focusDown = null;
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     if (isdragging) {
@@ -263,14 +224,18 @@ function intersect() {
     raycaster.setFromCamera(mouse, camera);
     const objects = scene.children.slice(1);
     const intersects = raycaster.intersectObjects(objects);
+    focus = null;
     if (intersects.length > 0) {
-        if (INTERSECTED !== intersects[0].object && intersects[0].object.name === "Selectable" && selectable) {
+        if (INTERSECTED !== intersects[0].object && intersects[0].object.name.slice(0, 5) === "Event" && selectable) {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+            // Save the color of the object
             INTERSECTED = intersects[0].object;
             INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
             INTERSECTED.material.color.setHex(0xff0000);
         }
+        focus = intersects[0].object.name.slice(6);
     } else {
+        // Return the color to the object
         if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
         INTERSECTED = null;
     }

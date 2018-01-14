@@ -38,6 +38,8 @@ canvas {
     bottom: 20px;
     right: 20px;
     margin: 10px;
+    width: 65px;
+    height: 65px;
     font-size: 2em;
 }
 
@@ -52,7 +54,6 @@ canvas {
 #circle {
     width: 150px;
     height: 150px;
-    background-color: #2498cb;
     border-radius: 75px;
     position: absolute;
     top: -50px;
