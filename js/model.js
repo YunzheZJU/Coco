@@ -182,7 +182,6 @@ class Dice {
         this._material = new THREE.MeshBasicMaterial();
         this._isFirst = true;
         this._position = null;
-        this._current = 1;
         this._next = 6;
 
         const loader = new THREE.TextureLoader();
@@ -303,7 +302,8 @@ class Dice {
                         selectable = true;
                         TweenLite.to(scene.fog, 0.75, {
                             near: 11,
-                            far: 12
+                            far: 22,
+                            ease: Power4.easeIn
                         });
                     }, this)
                 });
@@ -321,9 +321,6 @@ class Dice {
             near: 7,
             far: 11,
         });
-
-        this._current = this._next;
-        // }
     }
 
     get dice() {
@@ -356,14 +353,6 @@ class Dice {
 
     set position(value) {
         this._position = value;
-    }
-
-    get current() {
-        return this._current;
-    }
-
-    set current(value) {
-        this._current = value;
     }
 
     get next() {

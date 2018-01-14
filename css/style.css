@@ -6,6 +6,10 @@ body {
     font-size: 13px;
     text-align: center;
     font-weight: bold;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
 }
 
 a {

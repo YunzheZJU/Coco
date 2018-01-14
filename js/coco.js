@@ -18,11 +18,16 @@ let numOfGridsOpened = 1;
 let status = -1;
 let frustumSize = {value: 30};
 let selectable = true;
+let isdragging = false;
 let currentProgress = {number: 0};
 let relatedNumber = 0;
+let clickCount = 3;
 const dice = new Dice();
 const $percent = $("#percent");
-const COLOR = [0xee3b24, 0xf99e1a, 0xef519e, 0x2497cb];
+const $circle = $("#circle");
+const $click = $(".click");
+const COLOR_HEX = [0xee3b24, 0xf99e1a, 0xef519e, 0x2497cb];
+const COLOR_STRING = ["#ee3b24", "#f99e1a", "#ef519e", "#2497cb"];
 
 init();
 animate();
@@ -77,9 +82,20 @@ function init() {
     stats = new Stats();
     container.appendChild(stats.dom);
 
+    document.addEventListener('wheel', onDocumentWheel, false);
     document.addEventListener('mousemove', onDocumentMouseMove, false);
+    document.addEventListener('mouseup', onDocumentMouseUp, false);
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
 
     window.addEventListener('resize', onWindowResize, false);
+
+    $click.click(function () {
+        clickCount++;
+        $circle.css('background-color', COLOR_STRING[clickCount % 4]);
+        if (clickCount > 20) {
+            console.log("20202002020202");
+        }
+    });
 
     $go.click(function () {
         if (status === -1) {
@@ -88,7 +104,7 @@ function init() {
             numOfGridsOpened = 1;
             TweenLite.to(scene.fog, 3, {
                 near: 11,
-                far: 12,
+                far: 22,
                 ease: Bounce.easeInOut
             });
             TweenLite.to(camera.position, 3, {
@@ -140,7 +156,7 @@ function init() {
                             const geometry = new THREE.Geometry().setFromPoints(points);
                             geometry.computeLineDistances();
                             const material = new THREE.LineDashedMaterial({
-                                color: COLOR[parseInt(Math.random() * 4)],
+                                color: COLOR_HEX[parseInt(Math.random() * 4)],
                                 linewidth: 2,
                                 scale: 1,
                                 dashSize: 0.2,
@@ -184,9 +200,20 @@ function init() {
                 status = 0;
             } else {
                 status = 2;
-                return;
             }
         } else if (status === 2) {
+            TweenLite.to(camera.position, 4, {
+                y: 20,
+                ease: Back.easeInOut
+            });
+            TweenLite.to(camera.position, 4, {
+                x: 0,
+                z: 0
+            });
+            TweenLite.to(scene.fog, 3, {
+                near: 21,
+                far: 22
+            });
             console.log("You win!");
         }
     });
@@ -203,10 +230,26 @@ function onWindowResize() {
     renderer.setSize(width, height);
 }
 
+function onDocumentWheel(event) {
+    camera.position.y *= (event.wheelDelta > 0 ? 0.9 : 1.1);
+}
+
+function onDocumentMouseDown(event) {
+    isdragging = true;
+}
+
+function onDocumentMouseUp(event) {
+    isdragging = false;
+}
+
 function onDocumentMouseMove(event) {
     event.preventDefault();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    if (isdragging) {
+        camera.position.x -= event.movementX / 50;
+        camera.position.z -= event.movementY / 50;
+    }
 }
 
 function animate() {
