@@ -74,20 +74,31 @@ class Grid {
             y: 1,
             z: 1.25,
             ease: Elastic.easeOut,
-            onComplete: function () {
+            onComplete: $.proxy(function () {
+                this.spin();
                 TweenLite.to(camera.position, 2, {
                     y: 10,
-                    delay: 1,
+                    delay: 1.75,
                     ease: Back.easeInOut
                 });
                 TweenLite.to(camera.position, 2, {
                     x: grid[numOfGridsOpened - 1].position.x,
                     z: grid[numOfGridsOpened - 1].position.z,
-                    delay: 1,
+                    delay: 1.75,
                     ease: Power2.easeInOut
                 });
-            }
+            }, this)
         });
+    }
+
+    spin() {
+        TweenLite.to(this._cube.rotation, 2, {
+            y: 2 * Math.PI,
+            ease: Power0.easeNone,
+            onComplete: $.proxy(function () {
+                this._cube.rotation.y = 0;
+            }, this)
+        })
     }
 
     rotate() {
