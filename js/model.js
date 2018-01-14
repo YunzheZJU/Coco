@@ -50,7 +50,10 @@ class Grid {
     }
 
     show(delay) {
-        scene.add(this._cube);
+        if (!this._isShown) {
+            scene.add(this._cube);
+            this._isShown = true;
+        }
         TweenLite.to(this._cube.scale, 1 + 0.2 * (Math.random() - 0.5), {
             x: 1.25,
             y: 1,
@@ -59,15 +62,42 @@ class Grid {
             ease: Elastic.easeOut,
             onComplete: $.proxy(this.rotate, this)
         });
-        this._isShown = true;
+    }
+
+    popup() {
+        if (!this._isShown) {
+            scene.add(this._cube);
+            this._isShown = true;
+        }
+        TweenLite.to(this._cube.scale, 1 + 0.2 * (Math.random() - 0.5), {
+            x: 1.25,
+            y: 1,
+            z: 1.25,
+            ease: Elastic.easeOut,
+            onComplete: function () {
+                TweenLite.to(camera.position, 2, {
+                    y: 10,
+                    delay: 1,
+                    ease: Back.easeInOut
+                });
+                TweenLite.to(camera.position, 2, {
+                    x: grid[numOfGridsOpened - 1].position.x,
+                    z: grid[numOfGridsOpened - 1].position.z,
+                    delay: 1,
+                    ease: Power2.easeInOut
+                });
+            }
+        });
     }
 
     rotate() {
-        TweenLite.to(this._cube.rotation, 2, {
-            z: -Math.PI,
-            ease: Bounce.easeOut
-        });
-        this._isRotated = true;
+        if (!this._isRotated) {
+            TweenLite.to(this._cube.rotation, 2, {
+                z: -Math.PI,
+                ease: Bounce.easeOut
+            });
+            this._isRotated = true;
+        }
     }
 
     get num() {

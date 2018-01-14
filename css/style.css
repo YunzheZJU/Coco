@@ -1,8 +1,8 @@
 body {
     background-color: #000000;
-    margin: 0px;
+    margin: 0;
     overflow: hidden;
-    font-family: Monospace;
+    font-family: Monospace, serif;
     font-size: 13px;
     text-align: center;
     font-weight: bold;
@@ -15,7 +15,7 @@ a {
 #info {
     color: #fff;
     position: absolute;
-    top: 0px;
+    top: 0;
     width: 100%;
     padding: 5px;
 }
@@ -37,5 +37,48 @@ canvas {
     font-size: 2em;
 }
 
-.go p {
+.pg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #fff;
+    margin-right: 1em;
+}
+
+#circle {
+    width: 150px;
+    height: 150px;
+    background-color: #2498cb;
+    border-radius: 75px;
+    position: absolute;
+    top: -50px;
+    right: -30px;
+}
+
+.pg #text {
+    margin-top: 0.5em;
+    margin-right: 2em;
+    font-size: 1.2em;
+    line-height: 1.5em;
+}
+
+.pg #percent {
+    font-size: 3em;
+    line-height: 1em;
+    text-align: center;
+}
+
+.pg #symbol {
+    text-align: right;
+    font-size: 2em;
+    margin-top: -0.75em;
+}
+
+@font-face {
+    font-family: "Century";
+    src: url("../font/Gothic.ttf");
+}
+
+.century {
+    font-family: Century, serif;
 }
