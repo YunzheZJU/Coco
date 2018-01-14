@@ -97,11 +97,10 @@ canvas {
 
 #image {
     position: absolute;
-    top: 0;
+    top: -500px;
     right: 600px;
-    width: auto;
-    height: 200px;
-    background-image: url("../image/Still_1.jpg");
+    width: 250px;
+    height: auto;
 }
 
 #video {

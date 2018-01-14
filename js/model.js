@@ -4,6 +4,7 @@
 
 'use strict';
 const $go = $("#go");
+const $pup = $("#pup");
 
 class Grid {
     constructor(num, position, type, event) {
@@ -140,7 +141,7 @@ class Grid {
             this._switch = true;
             this.freeRotatingYZ();
             board.show();
-            // setTimeout($.proxy(this.back, this), 5000);
+            // $pup.style.top = "0";
         }
     }
 

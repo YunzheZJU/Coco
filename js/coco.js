@@ -261,13 +261,14 @@ function onDocumentWheel(event) {
 function onDocumentMouseDown(event) {
     isdragging = true;
     focusDown = focus;
-    // console.log("Mouse down: " + focusDown);
+    console.log("Mouse down: " + focusDown);
 }
 
 function onDocumentMouseUp(event) {
     isdragging = false;
     if (focusDown && (focus === focusDown)) {
         const number = parseInt(focus);
+        console.log(number);
         if (number === 0) {
             grid[whoIsFetched].back();
             board.hide();
@@ -276,7 +277,7 @@ function onDocumentMouseUp(event) {
             grid[number - 1].fetch();
         }
     }
-    // console.log("Mouse Up: " + focus);
+    console.log("Mouse Up: " + focus + ", " + focusDown);
 }
 
 function onDocumentMouseMove(event) {
@@ -304,6 +305,7 @@ function intersect() {
     focus = null;
     if (intersects.length > 0) {
         focus = intersects[0].object.name.slice(6);
+        console.log("INTERSECT: " + focus);
         if (INTERSECTED !== intersects[0].object && intersects[0].object.name.slice(0, 5) === "Event" && focus !== '0' && selectable) {
             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             // Save the color of the object
