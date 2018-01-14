@@ -112,7 +112,8 @@ function init() {
         let popup = new $.Popup({
             afterClose: function () {
                 isChoosing = true;
-            }
+            },
+            closeContent: '',
         });
         popup.open('<img src="image/Still_' + currentEvent + '.jpg" width="1000">', 'html');
     });
@@ -125,7 +126,8 @@ function init() {
             }
         },
         width : 560,
-        height : 315
+        height : 315,
+        closeContent: '',
     });
 
     $go.click(function () {
@@ -185,21 +187,21 @@ function init() {
                 });
                 status = 0;
             } else {
-                status = 2;
+                TweenLite.to(camera.position, 4, {
+                    y: 20,
+                    ease: Back.easeInOut
+                });
+                TweenLite.to(camera.position, 4, {
+                    x: 0,
+                    z: 0
+                });
+                TweenLite.to(scene.fog, 3, {
+                    near: 21,
+                    far: 22
+                });
+                console.log("You win!");
             }
         } else if (status === 2) {
-            TweenLite.to(camera.position, 4, {
-                y: 20,
-                ease: Back.easeInOut
-            });
-            TweenLite.to(camera.position, 4, {
-                x: 0,
-                z: 0
-            });
-            TweenLite.to(scene.fog, 3, {
-                near: 21,
-                far: 22
-            });
             console.log("You win!");
         }
     });
@@ -313,20 +315,21 @@ function onDocumentMouseUp(e) {
                                 grid[whoIsFetched].back();
                                 board.hide();
                                 isChoosing = false;
-                            }
+                            },
+                            closeContent: '',
+                            containerClass: "choice-of-miguel"
                         });
-                        anotherPopup.open('<h1>米格的选择</h1>' +
-                            '<p>' + event[eventNumber].choice_1 + '</p>' +
-                            '<p>' + event[eventNumber].result + '</p>', 'html');
+                        anotherPopup.open('<div class="result choice">' + event[eventNumber].choice_1 + '</div>' +
+                            '<p class="text">' + event[eventNumber].result + '</p>', 'html');
                     },
                     backOpacity: 0.8,
                     modal: true,
-                    closeContent: ''
+                    closeContent: '',
+                    containerClass: "choice-container"
                 });
                 isChoosing = true;
-                popup.open('<h1>请选择</h1>' +
-                    '<p onclick="choiceChosen = 1;popup.close();" class="choice">' + event[eventNumber].choice_1 + '</p>' +
-                    '<p onclick="choiceChosen = 2;popup.close();" class="choice">' + event[eventNumber].choice_2 + '</p>', 'html');
+                popup.open('<div onclick="choiceChosen = 1;popup.close();" class="choice">' + event[eventNumber].choice_1 + '</div>' +
+                    '<div onclick="choiceChosen = 2;popup.close();" class="choice">' + event[eventNumber].choice_2 + '</div>', 'html');
             }
             else {
                 grid[whoIsFetched].back();

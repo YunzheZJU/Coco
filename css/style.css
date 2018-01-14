@@ -111,11 +111,70 @@ canvas {
 }
 
 .choice {
-    font-size: 1.5em;
-    line-height: 1.5em;
-    background-image: url("../image/choice_normal.jpg");
+    text-shadow: 0 0 4px #000000;
+    color: #eeeeee;
+    width: 650px;
+    margin-top: 3rem;
+    font-size: 2.5em;
+    line-height: 1.84em;
+    background-image: url("../image/choice_normal.png");
 }
 
 .choice:hover, .choice:active {
-    background-image: url("../image/choice_active.jpg");
+    text-shadow: none;
+    color: #b6da3d;
+    background-size: auto;
+    background-image: url("../image/choice_active.png");
+}
+
+.choice-container {
+    position: absolute;
+    z-index: 102;
+}
+
+.choice-container .popup {
+    font-family: SimHei, serif;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+div.popup {
+    padding: 0;
+}
+
+.choice-of-miguel {
+    background-image: url("../image/Result.png");
+    width: 800px;
+    height: 280px;
+    position: absolute;
+    z-index: 102;
+    padding: 3.5em 5.5em;
+}
+
+.choice-of-miguel .popup {
+    font-family: SimHei, serif;
+    /*text-shadow: 0 0 4px #000000;*/
+    color: #eeeeee;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.title {
+    font-size: 3em;
+    margin-left: 0;
+    width: auto;
+}
+
+.result {
+    font-size: 2.5em;
+    line-height: 1.84em;
+    margin: 0 auto .5em;
+}
+
+.text {
+    margin-top: -0.2em;
+    text-indent: 2em;
+    font-size: 2em;
+    color: #000000;
+    text-align: left !important;
 }
