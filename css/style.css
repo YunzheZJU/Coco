@@ -144,11 +144,10 @@ div.popup {
 
 .choice-of-miguel {
     background-image: url("../image/Result.png");
-    width: 800px;
     height: 280px;
     position: absolute;
     z-index: 102;
-    padding: 3.5em 5.5em;
+    padding-top: 3.5em;
 }
 
 .choice-of-miguel .popup {
@@ -159,12 +158,6 @@ div.popup {
     box-shadow: none;
 }
 
-.title {
-    font-size: 3em;
-    margin-left: 0;
-    width: auto;
-}
-
 .result {
     font-size: 2.5em;
     line-height: 1.84em;
@@ -172,6 +165,7 @@ div.popup {
 }
 
 .text {
+    width: 800px;
     margin-top: -0.2em;
     text-indent: 2em;
     font-size: 2em;

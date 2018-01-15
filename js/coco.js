@@ -206,18 +206,19 @@ function init() {
                 });
                 status = 0;
             } else {
-                TweenLite.to(camera.position, 4, {
-                    y: 20,
+                TweenLite.to(camera.position, 6, {
+                    y: 40,
                     ease: Back.easeInOut
                 });
-                TweenLite.to(camera.position, 4, {
+                TweenLite.to(camera.position, 6, {
                     x: 0,
                     z: 0
                 });
-                TweenLite.to(scene.fog, 3, {
-                    near: 21,
-                    far: 22
+                TweenLite.to(scene.fog, 4, {
+                    near: 49,
+                    far: 50
                 });
+                scene.remove(dice._dice);
                 console.log("You win!");
             }
         } else if (status === 2) {
