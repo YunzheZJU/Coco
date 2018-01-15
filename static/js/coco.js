@@ -183,45 +183,46 @@ function init() {
             }
             numOfGridsOpened += event[currentEvent - 1].number;
             currentEvent += 1;
-            if (currentEvent !== 49) {
-                TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
-                    y: 10,
-                    delay: 1,
-                    ease: Back.easeInOut
-                });
-                TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
-                    x: grid[numOfGridsOpened - 1].position.x,
-                    z: grid[numOfGridsOpened - 1].position.z,
-                    delay: 1,
-                    ease: Power2.easeInOut,
-                    onComplete: function () {
-                        ////////////////Read the story//////////////////////
-                        if (readStory.ReadStory) {
-                            whoIsFetched = numOfGridsOpened - 1;
-                            grid[numOfGridsOpened - 1].fetch();
-                        } else {
-                            onBack();
-                        }
+            TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
+                y: 10,
+                delay: 1,
+                ease: Back.easeInOut
+            });
+            TweenLite.to(camera.position, event[currentEvent - 2].number * 0.4 + 2.1, {
+                x: grid[numOfGridsOpened - 1].position.x,
+                z: grid[numOfGridsOpened - 1].position.z,
+                delay: 1,
+                ease: Power2.easeInOut,
+                onComplete: function () {
+                    ////////////////Read the story//////////////////////
+                    if (readStory.ReadStory) {
+                        whoIsFetched = numOfGridsOpened - 1;
+                        grid[numOfGridsOpened - 1].fetch();
+                    } else {
+                        onBack();
                     }
-                });
-                status = 0;
-            } else {
-                TweenLite.to(camera.position, 6, {
-                    y: 40,
-                    ease: Back.easeInOut
-                });
-                TweenLite.to(camera.position, 6, {
-                    x: 0,
-                    z: 0
-                });
-                TweenLite.to(scene.fog, 4, {
-                    near: 49,
-                    far: 50
-                });
-                scene.remove(dice._dice);
-                console.log("You win!");
+                }
+            });
+            status = 0;
+            if (currentEvent === 49) {
+                $go.attr('disabled', true);
+                status = 2;
             }
         } else if (status === 2) {
+            TweenLite.to(camera.position, 6, {
+                y: 40,
+                ease: Back.easeInOut
+            });
+            TweenLite.to(camera.position, 6, {
+                x: 0,
+                z: 0
+            });
+            TweenLite.to(scene.fog, 4, {
+                near: 49,
+                far: 50
+            });
+            scene.remove(dice._dice);
+            selectable = true;
             console.log("You win!");
         }
     });
@@ -229,7 +230,7 @@ function init() {
 
 function onBack() {
     /////////////Show related events////////////////////
-    if (event[currentEvent - 1].related !== 0) {
+    if (event[currentEvent - 1].related !== 0 && currentEvent < 45) {
         relatedNumber = event[currentEvent - 1].related;
 
         const curve = new THREE.SplineCurve([
