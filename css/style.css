@@ -98,7 +98,7 @@ canvas {
 #image, #video {
     position: absolute;
     top: -500px;
-    width: 250px;
+    width: 350px;
     height: auto;
 }
 
@@ -107,7 +107,7 @@ canvas {
 }
 
 #video {
-    right: 250px;
+    right: 200px;
 }
 
 .choice {
@@ -120,7 +120,7 @@ canvas {
     background-image: url("../image/choice_normal.png");
 }
 
-.choice:hover, .choice:active {
+.selectable:hover, .selectable:active {
     text-shadow: none;
     color: #b6da3d;
     background-size: auto;
@@ -175,6 +175,6 @@ div.popup {
     margin-top: -0.2em;
     text-indent: 2em;
     font-size: 2em;
-    color: #000000;
+    color: #b4b4b4;
     text-align: left !important;
 }

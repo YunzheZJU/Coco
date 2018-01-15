@@ -17,7 +17,7 @@ class Grid {
         this._num = num;
         this._position = position;
         this._type = type;
-        this._board = event;
+        this._event = event;
 
         const loader = new THREE.TextureLoader();
         this._material.map = loader.load('image/GridTexture_' + type + '_' + (num > 43 && num < 130 ? '2' : '1') + '.jpg');
@@ -146,7 +146,17 @@ class Grid {
             });
             this._switch = true;
             this.freeRotatingYZ();
-            board.show();
+            let eventNumber;
+            if (this._event < 8.4) {
+                eventNumber = this._event - 1;
+            } else if (this._event > 8.5 && this._event < 43) {
+                eventNumber = this._event;
+            } else if (this._event > 44) {
+                eventNumber = this._event - 2;
+            } else {
+                eventNumber = 8;
+            }
+            board.show(eventNumber + 1);
             TweenLite.to(imgPosition, 2, {
                 value: 0,
                 ease: Bounce.easeOut,
@@ -241,11 +251,11 @@ class Grid {
     }
 
     get event() {
-        return this._board;
+        return this._event;
     }
 
     set event(value) {
-        this._board = value;
+        this._event = value;
     }
 
     get isShown() {
@@ -485,21 +495,21 @@ class Board {
     }
 
     setTexture(number) {
-        // this._material.map = this._loader.load('image/BoardTexture_' + number + '.jpg');
-        this._material.map = this._loader.load('image/BoardTexture.jpg');
+        this._material.map = this._loader.load('image/BoardTexture_' + number + '.png');
+        // this._material.map = this._loader.load('image/BoardTexture.jpg');
         this._material.needsUpdate = true;
     }
 
-    show() {
+    show(specificEvent) {
         this._isShown = true;
-        this.setTexture(currentEvent);
+        this.setTexture(specificEvent ? specificEvent : currentEvent);
         this._board.position.x = camera.position.x + 1;
         this._board.position.y = camera.position.y - 3;
         this._board.position.z = camera.position.z;
         scene.add(this._board);
         TweenLite.to(this._board.scale, 2, {
             x: 0.5,
-            z: 0.5,
+            z: 0.362,
             delay: 0.5,
             ease: Elastic.easeOut.config(0.5, 0.3),
         });

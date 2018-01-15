@@ -312,6 +312,7 @@ function onDocumentMouseUp(e) {
         const number = parseInt(focus);
         // console.log(number);
         if (number === 0 && !isChoosing) {
+            isChoosing = true;
             let eventNumber;
             if (grid[whoIsFetched].event < 8.4) {
                 eventNumber = grid[whoIsFetched].event - 1;
@@ -346,13 +347,21 @@ function onDocumentMouseUp(e) {
                     closeContent: '',
                     containerClass: "choice-container"
                 });
-                isChoosing = true;
-                popup.open('<div onclick="choiceChosen = 1;popup.close();" class="choice">' + event[eventNumber].choice_1 + '</div>' +
-                    '<div onclick="choiceChosen = 2;popup.close();" class="choice">' + event[eventNumber].choice_2 + '</div>', 'html');
+                popup.open('<div onclick="choiceChosen = 1;popup.close();" class="choice selectable">' + event[eventNumber].choice_1 + '</div>' +
+                    '<div onclick="choiceChosen = 2;popup.close();" class="choice selectable">' + event[eventNumber].choice_2 + '</div>', 'html');
             }
             else {
-                grid[whoIsFetched].back();
-                board.hide();
+                let anotherPopup = new $.Popup({
+                    backOpacity: 0.2,
+                    afterClose: function () {
+                        grid[whoIsFetched].back();
+                        board.hide();
+                        isChoosing = false;
+                    },
+                    closeContent: '',
+                    containerClass: "choice-of-miguel"
+                });
+                anotherPopup.open('<p class="text">' + event[eventNumber].result + '</p>', 'html');
             }
         } else {
             if (selectable) {
