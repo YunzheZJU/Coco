@@ -205,7 +205,7 @@ function init() {
             });
             status = 0;
             if (currentEvent === 49) {
-                $go.attr('disabled', true);
+                $go.removeAttr('disabled');
                 status = 2;
             }
         } else if (status === 2) {
@@ -229,8 +229,9 @@ function init() {
 }
 
 function onBack() {
+    if (currentEvent === 49) return;
     /////////////Show related events////////////////////
-    if (event[currentEvent - 1].related !== 0 && currentEvent < 45) {
+    if (event[currentEvent - 1].related !== 0) {
         relatedNumber = event[currentEvent - 1].related;
 
         const curve = new THREE.SplineCurve([
@@ -416,6 +417,10 @@ function intersect() {
 }
 
 function render() {
+    if (currentEvent === 49) {
+        // Fuck you
+        $go.removeAttr("disabled");
+    }
     intersect();
     renderer.render(scene, camera);
 }
