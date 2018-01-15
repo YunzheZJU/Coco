@@ -68,10 +68,10 @@ function init() {
     scene.add(gridHelper);
 
     // Logo
-    const geometry = new THREE.PlaneGeometry(10, 10, 1);
+    const geometry = new THREE.PlaneGeometry(14, 14, 1);
     const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide});
     const loader = new THREE.TextureLoader();
-    material.map = loader.load("image/LogoTexture.jpg");
+    material.map = loader.load("image/LogoTexture.png");
     material.transparent = true;
     material.map.wrapS = THREE.RepeatWrapping;
     logo = new THREE.Mesh(geometry, material);
