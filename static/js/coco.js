@@ -71,7 +71,7 @@ function init() {
     const geometry = new THREE.PlaneGeometry(14, 14, 1);
     const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide});
     const loader = new THREE.TextureLoader();
-    material.map = loader.load("image/LogoTexture.png");
+    material.map = loader.load("static/image/LogoTexture.png");
     material.transparent = true;
     material.map.wrapS = THREE.RepeatWrapping;
     logo = new THREE.Mesh(geometry, material);
@@ -79,12 +79,12 @@ function init() {
     logo.rotation.x = - Math.PI / 2;
     scene.add(logo);
 
-    $.getJSON("data/map.json", function (result) {
+    $.getJSON("static/data/map.json", function (result) {
         $.each(result, function (i, tuple) {
             grid.push(new Grid(tuple.num, new THREE.Vector3(tuple.x * 1.5 - 15, tuple.y + 0.4, tuple.z * 1.5 - 16.5), tuple.type, tuple.event));
         });
     });
-    $.getJSON("data/event.json", function (result) {
+    $.getJSON("static/data/event.json", function (result) {
         $.each(result, function (i, tuple) {
             event.push({
                 event: tuple.event,
@@ -128,7 +128,7 @@ function init() {
             },
             closeContent: '',
         });
-        popup.open('<img src="image/Still_' + currentEvent + '.jpg" width="1000">', 'html');
+        popup.open('<img src="static/image/Still_' + currentEvent + '.jpg" width="1000">', 'html');
     });
     $video.popup({
         types: {

@@ -20,7 +20,7 @@ class Grid {
         this._event = event;
 
         const loader = new THREE.TextureLoader();
-        this._material.map = loader.load('image/GridTexture_' + type + '_' + (num > 43 && num < 130 ? '2' : '1') + '.jpg');
+        this._material.map = loader.load('static/image/GridTexture_' + type + '_' + (num > 43 && num < 130 ? '2' : '1') + '.jpg');
         this._material.map.wrapS = THREE.RepeatWrapping;
 
         this.load();
@@ -49,7 +49,7 @@ class Grid {
 
     load() {
         const loader = new THREE.OBJLoader();
-        loader.load("model/grid.obj", $.proxy(this.setGroup, this));
+        loader.load("static/model/grid.obj", $.proxy(this.setGroup, this));
     }
 
     show(delay) {
@@ -161,8 +161,8 @@ class Grid {
                 value: 0,
                 ease: Bounce.easeOut,
                 onStart: function () {
-                    $("#img")[0].src = "image/Still_" + currentEvent + ".jpg";
-                    $("#vid")[0].src = "image/Still_" + (currentEvent + 1) + ".jpg";
+                    $("#img")[0].src = "static/image/Still_" + currentEvent + ".jpg";
+                    $("#vid")[0].src = "static/image/Still_" + (currentEvent + 1) + ".jpg";
                 },
                 onUpdate: function () {
                     $image[0].style.top = parseInt(imgPosition.value) + "px";
@@ -276,7 +276,7 @@ class Dice {
         this._next = 6;
 
         const loader = new THREE.TextureLoader();
-        this._material.map = loader.load('image/DiceTexture.jpg');
+        this._material.map = loader.load('static/image/DiceTexture.jpg');
         this._material.transparent = true;
         this._material.map.wrapS = THREE.RepeatWrapping;
 
@@ -304,7 +304,7 @@ class Dice {
 
     load() {
         const loader = new THREE.OBJLoader();
-        loader.load("model/dice.obj", $.proxy(this.setGroup, this));
+        loader.load("static/model/dice.obj", $.proxy(this.setGroup, this));
     }
 
     show() {
@@ -462,8 +462,8 @@ class Board {
         this._isShown = false;
 
         this._loader = new THREE.TextureLoader();
-        this._material.map = this._loader.load('image/BoardTexture.jpg');
-        this._material.alphaMap = this._loader.load('image/BoardAlpha.jpg');
+        this._material.map = this._loader.load('static/image/BoardTexture.jpg');
+        this._material.alphaMap = this._loader.load('static/image/BoardAlpha.jpg');
         this._material.transparent = true;
         this._material.map.wrapS = THREE.RepeatWrapping;
 
@@ -491,12 +491,12 @@ class Board {
 
     load() {
         const loader = new THREE.OBJLoader();
-        loader.load("model/board.obj", $.proxy(this.setGroup, this));
+        loader.load("static/model/board.obj", $.proxy(this.setGroup, this));
     }
 
     setTexture(number) {
-        this._material.map = this._loader.load('image/BoardTexture_' + number + '.png');
-        // this._material.map = this._loader.load('image/BoardTexture.jpg');
+        this._material.map = this._loader.load('static/image/BoardTexture_' + number + '.png');
+        // this._material.map = this._loader.load('static/image/BoardTexture.jpg');
         this._material.needsUpdate = true;
     }
 
