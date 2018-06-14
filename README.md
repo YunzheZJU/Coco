@@ -86,7 +86,7 @@ Snapshot
 License
 -------
 
-Berryfolio is licensed under the [MIT][MIT] license 
+Coco is licensed under the [MIT][MIT] license 
 while all media files related are under [CC BY-NC-ND 4.0][CC BY-NC-ND 4.0].  
 Copyright &copy; 2017, [Yunzhe][yunzhe], [Asaki][asaki].
 
