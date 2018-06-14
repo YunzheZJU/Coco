@@ -21,7 +21,7 @@ Table of Contents
 Requirements
 ------------
 
-Berryfolio requires the following Python version and Python packages to run:
+Coco requires the following Python version and Python packages to run:
 
   * [Python][Python] 2.7
   * [Flask][Flask] 1.0.2
