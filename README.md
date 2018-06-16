@@ -108,16 +108,16 @@ For any question, please mail to [yunzhe@zju.edu.cn][Mail]
 
 [localhost]: http://localhost:8080/Coco.html
 
-[S0]: documents/0.png
-[S1]: documents/1.png
-[S2]: documents/2.png
-[S3]: documents/3.png
-[S4]: documents/4.png
-[S5]: documents/5.png
-[S6]: documents/6.png
-[S7]: documents/7.png
-[S8]: documents/8.png
-[S9]: documents/9.png
+[S0]: docs/0.png
+[S1]: docs/1.png
+[S2]: docs/2.png
+[S3]: docs/3.png
+[S4]: docs/4.png
+[S5]: docs/5.png
+[S6]: docs/6.png
+[S7]: docs/7.png
+[S8]: docs/8.png
+[S9]: docs/9.png
 
 [MIT]: /LICENCE_MIT.md
 [CC BY-NC-ND 4.0]: /LICENCE_CC_BY_NC_ND_4_0.md
