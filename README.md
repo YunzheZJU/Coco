@@ -6,7 +6,7 @@ Coco
 Project of CrossMediaVisualization2017@ZJU.
 Storyline for Movie "Coco". Third-party Javascript libraries [Three.js][threejs], [Popup.js][popupjs] and [TweenLite.js][tweenlitejs] are used in this project.
 
-Open [Demo][pages] for playing!
+Open [Demo][demo] for playing!
 
 Table of Contents
 -----------------
@@ -98,7 +98,7 @@ For any question, please mail to [yunzhe@zju.edu.cn][Mail]
 
 
 [status]: https://img.shields.io/badge/status-finished-green.svg "Project Status: Finished"
-[pages]: https://yunzhezju.github.io/Coco/
+[demo]: https://yunzhezju.github.io/Coco/
 [threejs]: https://github.com/mrdoob/three.js
 [popupjs]: http://docs.toddish.co.uk/popup
 [tweenlitejs]: https://greensock.com/tweenlite
